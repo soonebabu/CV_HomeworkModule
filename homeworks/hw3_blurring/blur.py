@@ -7,12 +7,7 @@ The core claim under test (the convolution theorem):
 
 i.e. convolving an image with a kernel in the spatial domain gives the exact
 same result as multiplying their Fourier transforms and taking the inverse
-transform. ``blur_compare`` computes the blur both ways on the same
-(grayscale) image and returns both results plus the numerical difference
-between them, so the equivalence can be checked directly rather than just
-asserted. ``build_comparison_figure`` lays the whole experiment out as one
-2x3 figure: original / kernel / spatial result on top, image spectrum /
-kernel spectrum (OTF) / frequency-domain result on the bottom.
+transform.
 """
 
 import cv2
