@@ -62,20 +62,16 @@ def blur_view():
 
     out = blur.blur_compare(img, kernel_type=kernel_type, ksize=ksize, sigma=sigma)
 
-    files_to_save = {
-        "original": img,
-        "spatial": out["spatial_u8"],
-        "freq": out["freq_u8"],
-        "diff": out["diff_vis"],
-        "spectrum_original": out["spectrum_original"],
-        "spectrum_blurred": out["spectrum_blurred"],
-        "spectrum_kernel": out["spectrum_kernel"],
+    comparison_fname = f"{run_id}_comparison.png"
+    blur.build_comparison_figure(out, kernel_type, os.path.join(output_dir, comparison_fname))
+
+    diff_fname = f"{run_id}_diff.png"
+    cv2.imwrite(os.path.join(output_dir, diff_fname), out["diff_vis"])
+
+    urls = {
+        "comparison": url_for("static", filename=f"hw3/outputs/{comparison_fname}"),
+        "diff": url_for("static", filename=f"hw3/outputs/{diff_fname}"),
     }
-    urls = {}
-    for name, arr in files_to_save.items():
-        fname = f"{run_id}_{name}.png"
-        cv2.imwrite(os.path.join(output_dir, fname), arr)
-        urls[name] = url_for("static", filename=f"hw3/outputs/{fname}")
 
     result = {
         "urls": urls,

@@ -7,12 +7,18 @@ The core claim under test (the convolution theorem):
 
 i.e. convolving an image with a kernel in the spatial domain gives the exact
 same result as multiplying their Fourier transforms and taking the inverse
-transform. ``blur_compare`` computes the blur both ways on the same image and
-returns both results plus the numerical difference between them, so the
-equivalence can be checked directly rather than just asserted.
+transform. ``blur_compare`` computes the blur both ways on the same
+(grayscale) image and returns both results plus the numerical difference
+between them, so the equivalence can be checked directly rather than just
+asserted. ``build_comparison_figure`` lays the whole experiment out as one
+2x3 figure: original / kernel / spatial result on top, image spectrum /
+kernel spectrum (OTF) / frequency-domain result on the bottom.
 """
 
 import cv2
+import matplotlib
+matplotlib.use("Agg")  # headless-safe, works from the web app too
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -73,27 +79,21 @@ def frequency_convolve(channel, kernel):
     return full_result[pad_y:pad_y + h, pad_x:pad_x + w]
 
 
-def magnitude_spectrum_image(channel):
-    """Log-scaled, fftshifted magnitude spectrum, normalized to 0-255 for display."""
+def magnitude_spectrum(channel):
+    """Log-scaled, fftshifted magnitude spectrum (float, not yet normalized for display)."""
     F = np.fft.fftshift(np.fft.fft2(channel.astype(np.float64)))
-    mag = np.log1p(np.abs(F))
-    if mag.max() > 0:
-        mag = (mag / mag.max()) * 255.0
-    return mag.astype(np.uint8)
+    return np.log1p(np.abs(F))
 
 
 def kernel_frequency_response(kernel, shape):
-    """Magnitude of the kernel's own frequency response, padded to `shape` (fftshifted)."""
+    """Magnitude of the kernel's own frequency response (OTF), padded to `shape`, fftshifted."""
     h, w = shape
     kh, kw = kernel.shape
     padded = np.zeros((h, w), dtype=np.float64)
     padded[:kh, :kw] = kernel
     padded = np.roll(padded, (-(kh // 2), -(kw // 2)), axis=(0, 1))
     F = np.fft.fftshift(np.fft.fft2(padded))
-    mag = np.abs(F)
-    if mag.max() > 0:
-        mag = (mag / mag.max()) * 255.0
-    return mag.astype(np.uint8)
+    return np.abs(F)
 
 
 def normalize_for_display(arr):
@@ -105,23 +105,19 @@ def normalize_for_display(arr):
 
 def blur_compare(img_bgr, kernel_type="gaussian", ksize=15, sigma=3.0):
     """
-    Runs spatial-domain and frequency-domain blurring on the same image with
-    the same kernel and returns everything needed to display and validate
-    the comparison.
+    Runs spatial-domain and frequency-domain blurring on the same grayscale
+    image with the same kernel and returns everything needed to display and
+    validate the comparison.
     """
+    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+
     if kernel_type == "box":
         kernel = box_kernel_2d(ksize)
     else:
         kernel = gaussian_kernel_2d(ksize, sigma)
 
-    channels = cv2.split(img_bgr.astype(np.float64))
-    spatial_channels, freq_channels = [], []
-    for ch in channels:
-        spatial_channels.append(spatial_convolve(ch, kernel))
-        freq_channels.append(frequency_convolve(ch, kernel))
-
-    spatial_result = cv2.merge(spatial_channels)
-    freq_result = cv2.merge(freq_channels)
+    spatial_result = spatial_convolve(gray, kernel)
+    freq_result = frequency_convolve(gray, kernel)
     diff = spatial_result - freq_result
 
     metrics = {
@@ -131,25 +127,47 @@ def blur_compare(img_bgr, kernel_type="gaussian", ksize=15, sigma=3.0):
         "psnr_db": _psnr(spatial_result, freq_result),
     }
 
-    spatial_u8 = np.clip(spatial_result, 0, 255).astype(np.uint8)
-    freq_u8 = np.clip(freq_result, 0, 255).astype(np.uint8)
-    diff_vis = normalize_for_display(np.abs(diff))
-
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-    spectrum_original = magnitude_spectrum_image(gray)
-    spectrum_blurred = magnitude_spectrum_image(cv2.cvtColor(spatial_u8, cv2.COLOR_BGR2GRAY))
-    spectrum_kernel = kernel_frequency_response(kernel, gray.shape)
-
     return {
+        "gray": gray,
         "kernel": kernel,
-        "spatial_u8": spatial_u8,
-        "freq_u8": freq_u8,
-        "diff_vis": diff_vis,
+        "spatial_u8": np.clip(spatial_result, 0, 255).astype(np.uint8),
+        "freq_u8": np.clip(freq_result, 0, 255).astype(np.uint8),
+        "diff_vis": normalize_for_display(np.abs(diff)),
         "metrics": metrics,
-        "spectrum_original": spectrum_original,
-        "spectrum_blurred": spectrum_blurred,
-        "spectrum_kernel": spectrum_kernel,
+        "image_spectrum": magnitude_spectrum(gray),
+        "kernel_spectrum": kernel_frequency_response(kernel, gray.shape),
     }
+
+
+def build_comparison_figure(result, kernel_type, out_path):
+    """
+    Lays the whole experiment out as one 2x3 figure, matching the classic
+    "spatial vs. frequency" textbook comparison:
+
+        Original Image   | {Kernel} Kernel    | Spatial Convolution
+        Image Spectrum    | Kernel Spectrum    | Frequency-Domain Filtering
+        (FFT)              (OTF)
+    """
+    fig, axes = plt.subplots(2, 3, figsize=(15, 9))
+    fig.patch.set_facecolor("white")
+
+    kernel_title = f"{kernel_type.capitalize()} Kernel"
+    panels = [
+        (axes[0, 0], result["gray"], "gray", "Original Image"),
+        (axes[0, 1], result["kernel"], "hot", kernel_title),
+        (axes[0, 2], result["spatial_u8"], "gray", "Spatial Convolution"),
+        (axes[1, 0], result["image_spectrum"], "gray", "Image Spectrum (FFT)"),
+        (axes[1, 1], result["kernel_spectrum"], "gray", "Kernel Spectrum (OTF)"),
+        (axes[1, 2], result["freq_u8"], "gray", "Frequency-Domain Filtering"),
+    ]
+    for ax, data, cmap, title in panels:
+        ax.imshow(data, cmap=cmap)
+        ax.set_title(title, fontsize=13)
+        ax.axis("off")
+
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=150, facecolor="white")
+    plt.close(fig)
 
 
 def _psnr(a, b):

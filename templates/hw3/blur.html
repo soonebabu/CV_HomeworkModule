@@ -28,31 +28,18 @@
 {% if result %}
 <div class="card">
   <h2>Result <span class="badge">{{ result.kernel_type }}, k={{ result.ksize }}</span></h2>
-  <div class="img-grid">
-    <figure>
-      <img src="{{ result.urls.original }}">
-      <figcaption>Original</figcaption>
-    </figure>
-    <figure>
-      <img src="{{ result.urls.spatial }}">
-      <figcaption>Spatial-domain blur (convolution via filter2D)</figcaption>
-    </figure>
-    <figure>
-      <img src="{{ result.urls.freq }}">
-      <figcaption>Frequency-domain blur (FFT multiply, then inverse FFT)</figcaption>
-    </figure>
-    <figure>
-      <img src="{{ result.urls.diff }}">
-      <figcaption>|spatial - frequency|, normalized to 0-255 for display</figcaption>
-    </figure>
-  </div>
+  <p class="muted">Top row: the image, the kernel, and the spatial-domain convolution result
+    (<code>cv2.filter2D</code>). Bottom row: the image's own magnitude spectrum, the kernel's frequency response
+    (its OTF - a low-pass filter, bright near the center and dark at the edges), and the result of multiplying
+    the two spectra and inverse-transforming. The spatial result (top-right) and the frequency-domain result
+    (bottom-right) come from independent code paths but should be visually - and numerically - identical.</p>
+  <img src="{{ result.urls.comparison }}" style="width:100%; border:1px solid var(--border); border-radius:8px; background:#fff;">
 </div>
 
 <div class="card">
   <h2>Equivalence check</h2>
-  <p class="muted">These two blurred images were produced by completely different code paths (spatial convolution
-    vs. Fourier multiplication). If the convolution theorem holds, they should be numerically identical up to
-    floating-point rounding.</p>
+  <p class="muted">If the convolution theorem holds, the spatial and frequency results above should be numerically
+    identical up to floating-point rounding.</p>
   <div class="stat-grid">
     <div class="stat-box"><div class="label">Max abs. pixel diff</div><div class="value">{{ "%.2e"|format(result.metrics.max_abs_diff) }}</div></div>
     <div class="stat-box"><div class="label">Mean abs. pixel diff</div><div class="value">{{ "%.2e"|format(result.metrics.mean_abs_diff) }}</div></div>
@@ -61,31 +48,15 @@
       <div class="value">{% if result.metrics.psnr_db is none %}&infin; (identical){% else %}{{ "%.1f dB"|format(result.metrics.psnr_db) }}{% endif %}</div>
     </div>
   </div>
+  <div class="img-grid" style="max-width:320px;">
+    <figure>
+      <img src="{{ result.urls.diff }}">
+      <figcaption>|spatial - frequency|, normalized to 0-255 for display</figcaption>
+    </figure>
+  </div>
   <p class="note">On 8-bit images this difference is typically on the order of 1e-10 to 1e-12 in the unclipped
     float result - i.e. floating-point noise, not a real discrepancy. That is the experimental confirmation of
     <code>f * h &harr; F &middot; H</code> (see <a href="{{ url_for('hw3.theory') }}">Theory</a>).</p>
-</div>
-
-<div class="card">
-  <h2>Frequency-domain view</h2>
-  <p class="muted">The magnitude spectrum (log-scaled, DC at center) of the original image, the blurred image, and
-    the kernel's own frequency response. Blurring removes high-frequency energy (the spectrum shrinks toward the
-    center); the kernel's spectrum shows why - it's a low-pass filter, bright near the center and dark at the
-    edges.</p>
-  <div class="img-grid">
-    <figure>
-      <img src="{{ result.urls.spectrum_original }}">
-      <figcaption>|F(u,v)| of original</figcaption>
-    </figure>
-    <figure>
-      <img src="{{ result.urls.spectrum_blurred }}">
-      <figcaption>|F(u,v)| of blurred result</figcaption>
-    </figure>
-    <figure>
-      <img src="{{ result.urls.spectrum_kernel }}">
-      <figcaption>|H(u,v)| - the kernel's frequency response (low-pass)</figcaption>
-    </figure>
-  </div>
 </div>
 {% endif %}
 {% endblock %}
