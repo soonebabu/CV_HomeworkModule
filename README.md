@@ -1,7 +1,7 @@
 # Computer Vision Homeworks (CSc 8830)
 
-A single Flask app that hosts multiple homeworks, each as its own module, all reachable from one
-landing page.
+Hosted on : https://cv-homeworkmodule-1.onrender.com/
+
 
 ## Structure
 
@@ -16,8 +16,6 @@ templates/
 static/
 
 ```
-
-Each homework is under `homeworks/<name>/` with its own routes and templates.
 
 ## Homework 2 - Camera Calibration & Measurement
 
