@@ -1,0 +1,43 @@
+{
+  "hw": "hw2",
+  "page": "measure",
+  "title": "Real-world measurement",
+  "images": [
+    {
+      "file": "00.jpg",
+      "caption": "Measured edge (clicked endpoints)",
+      "wide": false,
+      "video": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Measured length",
+      "value": "49.64 cm"
+    },
+    {
+      "label": "Measured length (mm)",
+      "value": "496.43"
+    },
+    {
+      "label": "Pixel distance",
+      "value": "625.4 px"
+    }
+  ],
+  "params": [
+    {
+      "label": "Camera-to-object distance",
+      "value": "2200 mm"
+    },
+    {
+      "label": "Endpoints (px)",
+      "value": "(1184, 1929) - (1808, 1891)"
+    }
+  ],
+  "table_html": null,
+  "table_title": null,
+  "math": false,
+  "note": "L = (pixel_distance x Z) / f, using the calibrated focal length and the entered distance.",
+  "caption": "",
+  "saved_at": "2026-09-30 17:09"
+}

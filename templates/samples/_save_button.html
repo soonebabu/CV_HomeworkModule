@@ -1,0 +1,14 @@
+{# Included on result pages. Only renders when running locally (see homeworks/samples.py). #}
+{% if sample_token and samples_editable %}
+<div class="card save-sample">
+  <h2>Save this run as a sample output</h2>
+  <p class="muted">Adds this result to the public <em>Sample outputs</em> page so visitors can see the code working
+    without uploading anything. Commit <code>static/samples/</code> and push afterwards to publish it.</p>
+  <form method="POST" action="{{ url_for('samples.save') }}">
+    <input type="hidden" name="token" value="{{ sample_token }}">
+    <label>Caption (optional)</label>
+    <input type="text" name="caption" placeholder="e.g. Outdoor photo, person standing" maxlength="200">
+    <button type="submit">Save as sample output</button>
+  </form>
+</div>
+{% endif %}

@@ -4,4 +4,5 @@
   <a class="nav-link {{ 'current' if active_page == 'overview' }}" href="{{ url_for('hw3.overview') }}">Overview</a>
   <a class="nav-link {{ 'current' if active_page == 'blur' }}" href="{{ url_for('hw3.blur_view') }}">Blur: space vs. frequency</a>
   <a class="nav-link {{ 'current' if active_page == 'theory' }}" href="{{ url_for('hw3.theory') }}">Theory (convolution theorem)</a>
+  <a class="nav-link samples-link {{ 'current' if active_page == 'samples' }}" href="{{ url_for('samples.gallery', hw='hw3') }}">Sample outputs</a>
 {% endblock %}

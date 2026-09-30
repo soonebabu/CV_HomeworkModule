@@ -1,0 +1,115 @@
+{# Worked example + tables for the tracking page. Also saved as HTML with a sample, so no page-level JS here. #}
+{% set w = result.worked %}
+{% if w %}
+{% set r = w.row %}
+{% set info = w.info %}
+{% set bl = w.bilinear %}
+<div class="card">
+  <h2>Worked example - feature #{{ r.id }}</h2>
+  <p>The feature that moved the most among the reliable ones, at $\mathbf u = ({{ "%.0f"|format(r.x) }},\ {{ "%.0f"|format(r.y) }})$
+    in frame $t$. The window is {{ 2 * w.half + 1 }} &times; {{ 2 * w.half + 1 }} pixels and the pyramid has
+    {{ w.levels }} levels. Gradients $I_x, I_y$ come from the Scharr filter divided by 32, in grey levels per pixel.</p>
+
+  <h3>1. Structure tensor at level 0</h3>
+  <div class="theory-block">
+    $$ G = \sum_W \begin{bmatrix} I_x^2 & I_xI_y \\ I_xI_y & I_y^2 \end{bmatrix}
+         = \begin{bmatrix} {{ "%.1f"|format(info.G[0][0]) }} & {{ "%.1f"|format(info.G[0][1]) }} \\ {{ "%.1f"|format(info.G[1][0]) }} & {{ "%.1f"|format(info.G[1][1]) }} \end{bmatrix},
+       \qquad \lambda_1 = {{ "%.1f"|format(info.eig[1]) }},\ \ \lambda_2 = {{ "%.1f"|format(info.eig[0]) }} $$
+  </div>
+  <p>Both eigenvalues are large (per window pixel $\lambda_2 / {{ (2 * w.half + 1) ** 2 }} = {{ "%.1f"|format(info.eig[0] / (2 * w.half + 1) ** 2) }}$,
+    and the threshold is {{ lk.MIN_EIG }}). The ratio is $\lambda_1/\lambda_2 = {{ "%.2f"|format(info.eig[1] / info.eig[0]) }}$, so this is a
+    corner and not an edge, and $G$ is safely invertible.</p>
+
+  <h3>2. Iterations at level 0</h3>
+  <p>The coarser pyramid levels hand down the initial guess
+    $\mathbf g^0 = ({{ "%.3f"|format(info.guess[0]) }},\ {{ "%.3f"|format(info.guess[1]) }})$. Each row solves
+    $G\boldsymbol\delta = \mathbf b_k$ with $\mathbf b_k = \sum_W \big(I(\mathbf x) - J(\mathbf x + \mathbf d_k)\big)\,[I_x, I_y]^{\mathsf T}$,
+    where $J$ is sampled with bilinear interpolation.</p>
+  <table class="result-table">
+    <tr><th>k</th><th>$\mathbf d_k$ (x, y)</th><th>$\mathbf b_k$</th><th>$\boldsymbol\delta = G^{-1}\mathbf b_k$</th><th>$|\boldsymbol\delta|$</th><th>RMS $I - J$</th></tr>
+    {% for it in info.iters %}
+    <tr><td>{{ it.k }}</td>
+      <td>({{ "%.4f"|format(it.dx) }}, {{ "%.4f"|format(it.dy) }})</td>
+      <td>({{ "%.1f"|format(it.bx) }}, {{ "%.1f"|format(it.by) }})</td>
+      <td>({{ "%+.4f"|format(it.sx) }}, {{ "%+.4f"|format(it.sy) }})</td>
+      <td>{{ "%.4f"|format((it.sx ** 2 + it.sy ** 2) ** 0.5) }}</td>
+      <td>{{ "%.2f"|format(it.rms) }}</td></tr>
+    {% endfor %}
+  </table>
+  <p class="muted">The iteration stops when $|\boldsymbol\delta| < {{ lk.EPS }}$ px. This one converged in {{ info.n_iter }} step(s).</p>
+
+  <h3>3. Prediction vs. actual</h3>
+  <div class="theory-block">
+    $$ \mathbf u' = \mathbf u + \mathbf d = ({{ "%.0f"|format(r.x) }},\ {{ "%.0f"|format(r.y) }}) + ({{ "%.3f"|format(r.lk_dx) }},\ {{ "%.3f"|format(r.lk_dy) }})
+       = ({{ "%.3f"|format(r.pred_x) }},\ {{ "%.3f"|format(r.pred_y) }}) $$
+    $$ \text{actual (NCC peak)} = ({{ "%.3f"|format(r.act_x) }},\ {{ "%.3f"|format(r.act_y) }}), \qquad
+       \lVert \mathbf u' - \mathbf u'_{\text{actual}} \rVert = {{ "%.3f"|format(r.err) }}\ \text{px} $$
+    $$ \text{OpenCV LK: } \mathbf d = ({{ "%.3f"|format(r.cv_dx) }},\ {{ "%.3f"|format(r.cv_dy) }}), \qquad
+       \text{difference from ours} = {{ "%.4f"|format(r.err_cv) }}\ \text{px} $$
+  </div>
+  <p>Brightness constancy check: the mean $|I(\mathbf x) - J(\mathbf x + \mathbf d)|$ over the window drops from
+    {{ "%.2f"|format(r.res_before) }} grey levels at $\mathbf d = \mathbf 0$ to {{ "%.2f"|format(r.res_after) }} at the tracked $\mathbf d$.</p>
+
+  <h3>4. Bilinear interpolation at the tracked position</h3>
+  <p>The centre of the window lands at $(x, y) = ({{ "%.4f"|format(bl.x) }},\ {{ "%.4f"|format(bl.y) }})$ in frame $t+1$, so
+    $x_0 = {{ bl.x0 }}$, $y_0 = {{ bl.y0 }}$, $a = {{ "%.4f"|format(bl.a) }}$, $b = {{ "%.4f"|format(bl.b) }}$. The four neighbours are:</p>
+  <div class="theory-block">
+    $$ \begin{bmatrix} f_{00} & f_{10} \\ f_{01} & f_{11} \end{bmatrix}
+       = \begin{bmatrix} {{ "%.0f"|format(bl.f00) }} & {{ "%.0f"|format(bl.f10) }} \\ {{ "%.0f"|format(bl.f01) }} & {{ "%.0f"|format(bl.f11) }} \end{bmatrix} $$
+    $$ f(x, y_0) = (1-a)f_{00} + a f_{10} = {{ "%.4f"|format(1 - bl.a) }}\cdot{{ "%.0f"|format(bl.f00) }} + {{ "%.4f"|format(bl.a) }}\cdot{{ "%.0f"|format(bl.f10) }} = {{ "%.4f"|format(bl.top) }} $$
+    $$ f(x, y_0{+}1) = (1-a)f_{01} + a f_{11} = {{ "%.4f"|format(1 - bl.a) }}\cdot{{ "%.0f"|format(bl.f01) }} + {{ "%.4f"|format(bl.a) }}\cdot{{ "%.0f"|format(bl.f11) }} = {{ "%.4f"|format(bl.bottom) }} $$
+    $$ f(x, y) = (1-b)\,{{ "%.4f"|format(bl.top) }} + b\,{{ "%.4f"|format(bl.bottom) }} = {{ "%.4f"|format(bl.value) }} $$
+  </div>
+  <p>Equivalently, the weights $(1-a)(1-b), a(1-b), (1-a)b, ab$ are
+    {{ "%.4f"|format(bl.w00) }}, {{ "%.4f"|format(bl.w10) }}, {{ "%.4f"|format(bl.w01) }}, {{ "%.4f"|format(bl.w11) }}
+    (sum {{ "%.4f"|format(bl.w00 + bl.w10 + bl.w01 + bl.w11) }}). OpenCV's <code>getRectSubPix</code> at the same point gives
+    {{ "%.4f"|format(bl.reference) }} (difference {{ "%.1e"|format((bl.value - bl.reference)|abs) }}, which is float32 rounding).
+    For comparison, the pixel at $\mathbf u$ in frame $t$ is {{ "%.0f"|format(w.patch_value) }}: the interpolated
+    value in frame $t+1$ is close to it, as brightness constancy says it should be.</p>
+</div>
+{% endif %}
+
+{% if result.manual %}
+<div class="card">
+  <h2>Your clicked points</h2>
+  <table class="result-table">
+    <tr><th>#</th><th>clicked in frame t</th><th>clicked in frame t+1 (actual)</th><th>predicted by LK</th><th>|predicted - clicked|</th></tr>
+    {% for m in result.manual %}
+    <tr><td>M{{ loop.index }}</td><td>({{ "%.1f"|format(m.x1) }}, {{ "%.1f"|format(m.y1) }})</td>
+      <td>({{ "%.1f"|format(m.x2) }}, {{ "%.1f"|format(m.y2) }})</td>
+      {% if m.ok %}
+      <td>({{ "%.2f"|format(m.pred_x) }}, {{ "%.2f"|format(m.pred_y) }})</td><td>{{ "%.2f"|format(m.err) }} px</td>
+      {% else %}
+      <td colspan="2" class="bad">not trackable (flat patch or edge - aperture problem)</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="muted">Hand clicks are only good to about &plusmn;0.5-1 px, so errors of that size mean the tracker agrees with you.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Every tracked feature</h2>
+  <p class="muted">All positions in pixels. "Actual" is the NCC template-match location in frame t+1. Grey rows
+    have a weak match (NCC &le; 0.9, e.g. on a motion boundary or in repeated texture) and are left out of the statistics.</p>
+  <div style="overflow-x:auto;">
+  <table class="result-table">
+    <tr><th>#</th><th>u (frame t)</th><th>d (our LK)</th><th>predicted u + d</th><th>actual</th><th>error</th>
+      <th>d (OpenCV)</th><th>NCC</th><th>$\lambda_2$/px</th><th>residual</th></tr>
+    {% for r in result.rows %}
+    <tr {% if not r.reliable %}style="opacity:.5"{% endif %}>
+      <td>{{ r.id }}</td><td>({{ "%.0f"|format(r.x) }}, {{ "%.0f"|format(r.y) }})</td>
+      <td>({{ "%.3f"|format(r.lk_dx) }}, {{ "%.3f"|format(r.lk_dy) }})</td>
+      <td>({{ "%.2f"|format(r.pred_x) }}, {{ "%.2f"|format(r.pred_y) }})</td>
+      <td>({{ "%.2f"|format(r.act_x) }}, {{ "%.2f"|format(r.act_y) }})</td>
+      <td>{{ "%.3f"|format(r.err) }}</td>
+      <td>({{ "%.3f"|format(r.cv_dx) }}, {{ "%.3f"|format(r.cv_dy) }})</td>
+      <td>{{ "%.3f"|format(r.ncc) }}</td>
+      <td>{{ "%.1f"|format(r.lam_min / (2 * lk.HALF_WIN + 1) ** 2) }}</td>
+      <td>{{ "%.1f"|format(r.res_before) }} &rarr; {{ "%.1f"|format(r.res_after) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>

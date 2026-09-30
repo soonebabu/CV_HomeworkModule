@@ -1,0 +1,50 @@
+{% extends "hw6/_layout.html" %}
+{% block content %}
+<div class="card">
+  <h1>Optical Flow, Feature Tracking and Structure from Motion</h1>
+  <p>CSc 8830 Computer Vision, Homework 6. Three parts:</p>
+  <ol>
+    <li><strong><a href="{{ url_for('hw6.flow_view') }}">Optical flow video</a></strong> - upload a video, take a
+      30 s window with motion in it, compute dense optical flow (Farneback) between every pair of frames and get
+      it back as a video: flow vectors drawn on the frame next to a colour-coded flow field. The same page
+      measures what the flow tells us - when and where things move, how fast, in which direction, and whether
+      it's the camera (pan / zoom / roll) or objects moving - and shows the plots and frames as evidence.</li>
+    <li><strong><a href="{{ url_for('hw6.tracking_view') }}">Two-frame tracking</a></strong> - pick two consecutive
+      frames, track corner features with a Lucas-Kanade tracker written from the equations (bilinear
+      interpolation included), and check every predicted position against where the point actually is in the
+      second frame. "Actual" is measured independently by template matching, and you can also click points
+      yourself. One feature is worked through number by number.</li>
+    <li><strong><a href="{{ url_for('hw6.sfm_view') }}">Structure from motion</a></strong> - four photos of a flat
+      object from four viewpoints. Click the same boundary points in each; the page recovers the camera poses and
+      the 3-D points through plane homographies, estimates the object's boundary in real units, and prints all
+      the matrices along the way.</li>
+  </ol>
+  <p>The derivations (brightness constancy, the tracking equations, bilinear interpolation, the plane-induced
+    homography and its decomposition, triangulation) are on the <a href="{{ url_for('hw6.theory') }}">theory
+    page</a>.</p>
+</div>
+
+<div class="card">
+  <h2>What to capture</h2>
+  <h3>Two videos (parts 1 and 2)</h3>
+  <ul>
+    <li>At least 30 s each, with motion through most of it. Two different kinds of motion make the comparison
+      more interesting, e.g. <em>a static camera watching things move</em> (street traffic, people walking, a
+      fan) and <em>a moving camera</em> (slow pan across a room, or walking forward down a corridor).</li>
+    <li>Keep the phone steady for the static one (lean it against something). Avoid heavy zooming or very
+      dark scenes - flow needs texture and light.</li>
+    <li>Straight off the phone is fine (MP4 / MOV). Processing is done at 480 px, so 1080p is plenty.</li>
+  </ul>
+  <h3>Four photos (part 3)</h3>
+  <ul>
+    <li>A flat object with clear corners - a book cover, a board game box lid, a poster, a laptop lid, an A4 sheet
+      on a dark table. Measure its edges with a ruler.</li>
+    <li>Take four photos from clearly different positions (move the phone around the object, not just rotate it
+      on the spot), with the whole object in frame. Use the same phone and the 1x lens as the HW2 calibration,
+      no zoom, so the calibrated focal length applies.</li>
+    <li>For each photo, note roughly where the phone was (e.g. "40 cm above, 20 cm to the left") - the page
+      compares that with the recovered camera positions.</li>
+    <li>Name the files so they sort in viewpoint order (view1.jpg ... view4.jpg).</li>
+  </ul>
+</div>
+{% endblock %}

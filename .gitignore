@@ -19,4 +19,9 @@ static/hw4/uploads/*
 !static/hw4/uploads/.gitkeep
 static/hw4/outputs/*
 !static/hw4/outputs/.gitkeep
+static/hw6/uploads/*
+!static/hw6/uploads/.gitkeep
+static/hw6/outputs/*
+!static/hw6/outputs/.gitkeep
+static/samples/.pending/
 .DS_Store

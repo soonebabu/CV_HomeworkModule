@@ -1,0 +1,78 @@
+{% extends layout %}
+{% block head %}
+{% if sample.math %}
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="card">
+  <a class="muted" href="{{ url_for('samples.gallery', hw=hw) }}">&larr; All sample outputs</a>
+  <h1 style="margin-top:10px;">{{ sample.title }} <span class="badge">sample</span></h1>
+  {% if sample.caption %}<p>{{ sample.caption }}</p>{% endif %}
+  <p class="muted">Saved {{ sample.saved_at }} from a real run of the code.</p>
+
+  {% if sample.params %}
+  <h3>Inputs</h3>
+  <div class="stat-grid">
+    {% for p in sample.params %}
+    <div class="stat-box"><div class="label">{{ p.label }}</div><div class="value small">{{ p.value }}</div></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if sample.metrics %}
+<div class="card">
+  <h2>Results</h2>
+  <div class="stat-grid">
+    {% for m in sample.metrics %}
+    <div class="stat-box"><div class="label">{{ m.label }}</div><div class="value">{{ m.value }}</div></div>
+    {% endfor %}
+  </div>
+  {% if sample.note %}<p class="note">{{ sample.note }}</p>{% endif %}
+</div>
+{% endif %}
+
+{% if sample.images %}
+<div class="card">
+  <h2>Output images</h2>
+  {% for img in sample.images if img.wide %}
+  <figure class="wide-figure">
+    {% if img.video %}
+    <video src="{{ img.url }}" controls loop muted playsinline></video>
+    {% else %}
+    <a href="{{ img.url }}" target="_blank"><img src="{{ img.url }}"></a>
+    {% endif %}
+    <figcaption>{{ img.caption }}</figcaption>
+  </figure>
+  {% endfor %}
+  <div class="img-grid">
+    {% for img in sample.images if not img.wide %}
+    <figure>
+      <a href="{{ img.url }}" target="_blank"><img src="{{ img.url }}"></a>
+      <figcaption>{{ img.caption }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if sample.table_html %}
+<div class="card">
+  <h2>{{ sample.table_title or "Per-object detail" }}</h2>
+  {{ sample.table_html | safe }}
+</div>
+{% endif %}
+
+{% if samples_editable %}
+<div class="card">
+  <form method="POST" action="{{ url_for('samples.delete', hw=hw, sid=sample.id) }}"
+        onsubmit="return confirm('Delete this sample?');">
+    <button class="secondary" type="submit" style="margin-top:0;">Delete this sample</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

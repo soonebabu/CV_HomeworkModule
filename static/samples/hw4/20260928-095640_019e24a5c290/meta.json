@@ -1,0 +1,56 @@
+{
+  "hw": "hw4",
+  "page": "rgb",
+  "title": "RGB boundary (GrabCut)",
+  "images": [
+    {
+      "file": "00.png",
+      "caption": "GrabCut seed rectangle",
+      "wide": false
+    },
+    {
+      "file": "01.png",
+      "caption": "Segmentation mask",
+      "wide": false
+    },
+    {
+      "file": "02.png",
+      "caption": "Extracted boundary (largest contour)",
+      "wide": false
+    },
+    {
+      "file": "03.png",
+      "caption": "SAM2 mask (uploaded)",
+      "wide": false
+    },
+    {
+      "file": "04.png",
+      "caption": "Agreement: white = both, green = ours only, red = SAM2 only",
+      "wide": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "IoU vs. SAM2",
+      "value": "0.907"
+    },
+    {
+      "label": "Dice vs. SAM2",
+      "value": "0.951"
+    }
+  ],
+  "params": [
+    {
+      "label": "Seed box",
+      "value": "automatic (inset 5%)"
+    },
+    {
+      "label": "Box (x, y, w, h)",
+      "value": "26, 18, 487, 324"
+    }
+  ],
+  "table_html": null,
+  "note": null,
+  "caption": "",
+  "saved_at": "2026-09-28 09:56"
+}

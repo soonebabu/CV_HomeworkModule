@@ -1,0 +1,224 @@
+{% extends "hw6/_layout.html" %}
+{% block head %}
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+<style>
+  .tabs { display: flex; gap: 6px; margin: 12px 0 8px; flex-wrap: wrap; }
+  .tabs button { margin-top: 0; }
+  .tabs button.active { outline: 2px solid #fff; }
+  .click-area { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  #viewCanvas { border: 1px solid var(--border); border-radius: 6px; cursor: crosshair; max-width: 100%; }
+  #loupe { border: 1px solid var(--border); border-radius: 6px; background: #0d1214; }
+  .cam-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .cam-grid input { max-width: 100%; }
+</style>
+{% endblock %}
+{% block content %}
+
+{% if stage == "upload" %}
+<div class="card">
+  <h1>Part 3 - Structure from motion with four views of a flat object</h1>
+  <p>Upload four photos of the same flat object, taken from four different positions. On the next page you click
+    the same points on the object (its corners, plus a few points along the edges) in the same order in every
+    photo. From those clicks alone, plus the camera intrinsics, the page recovers:</p>
+  <ul>
+    <li>where each camera was and how it was rotated;</li>
+    <li>the 3-D position of every clicked point;</li>
+    <li>the object's plane, and its boundary in real units, which is then checked against your ruler
+      measurements.</li>
+  </ul>
+  <p>How it works is on the <a href="{{ url_for('hw6.theory') }}#sfm">theory page</a>.</p>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="stage" value="upload">
+    <label>The four photos (select all four at once; they're ordered by file name, so view1 ... view4 works well)</label>
+    <input type="file" name="images" accept="image/*" multiple required>
+    <label>What is the object?</label>
+    <input type="text" name="object" placeholder="e.g. hardcover book, 24 x 16 cm" maxlength="80">
+
+    <h3 style="margin-top:22px;">Camera intrinsics</h3>
+    <p class="muted">Pre-filled from: {{ cam.source }}. The values apply to photos of
+      {{ cam.width|int }} &times; {{ cam.height|int }}. Smaller or rotated photos are handled by scaling and
+      swapping the axes. Only change these if you used a different phone or lens.</p>
+    <input type="hidden" name="cam_source" value="{{ cam.source }}">
+    <div class="cam-grid">
+      <div><label>f<sub>x</sub> (px)</label><input type="number" step="any" name="fx" value="{{ '%.2f'|format(cam.fx) }}"></div>
+      <div><label>f<sub>y</sub> (px)</label><input type="number" step="any" name="fy" value="{{ '%.2f'|format(cam.fy) }}"></div>
+      <div><label>c<sub>x</sub> (px)</label><input type="number" step="any" name="cx" value="{{ '%.2f'|format(cam.cx) }}"></div>
+      <div><label>c<sub>y</sub> (px)</label><input type="number" step="any" name="cy" value="{{ '%.2f'|format(cam.cy) }}"></div>
+      <div><label>calib. width</label><input type="number" name="width" value="{{ cam.width|int }}"></div>
+      <div><label>calib. height</label><input type="number" name="height" value="{{ cam.height|int }}"></div>
+    </div>
+    <label>Distortion k1 k2 p1 p2 k3</label>
+    <input type="text" name="dist" value="{{ cam.dist|map('round', 6)|join(' ') }}" style="max-width:520px;">
+    <button type="submit">Upload and start clicking points</button>
+  </form>
+</div>
+{% endif %}
+
+{% if stage == "points" %}
+<div class="card">
+  <h1>Click the same points in all four views</h1>
+  <p>Pick a starting corner and go around the object's boundary in one direction, clicking the corners and a few
+    clear points along the edges - for example the 4 corners plus the 4 edge midpoints, or a notch or logo
+    edge. Use the <strong>same points in the same order</strong> in every view. At least 4 points are needed
+    and 6-10 is better, since the extra points give the least-squares steps something to average over. The
+    loupe on the right shows the pixels under the cursor, magnified.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="click-area">
+    <canvas id="viewCanvas"></canvas>
+    <div>
+      <canvas id="loupe" width="180" height="180"></canvas>
+      <p class="muted" id="counts"></p>
+      <button type="button" class="secondary" id="undoBtn">Undo last point</button><br>
+      <button type="button" class="secondary" id="clearBtn">Clear this view</button>
+    </div>
+  </div>
+
+  <form method="POST" id="sfmForm">
+    <input type="hidden" name="stage" value="compute">
+    <input type="hidden" name="run_id" value="{{ run_id }}">
+    <input type="hidden" name="points" id="pointsField">
+
+    <h3 style="margin-top:22px;">Scale</h3>
+    <p class="muted">Images alone only give shape up to scale. Give one real distance between two of your points
+      (measured with a ruler).</p>
+    <div class="cam-grid">
+      <div><label>from point #</label><input type="number" name="known_a" value="1" min="1"></div>
+      <div><label>to point #</label><input type="number" name="known_b" value="2" min="1"></div>
+      <div><label>distance (cm)</label><input type="number" step="any" name="known_len" value="10" required></div>
+    </div>
+    <label>Actual lengths of every boundary edge in cm, in click order: 1&rarr;2, 2&rarr;3, ..., last&rarr;1 (optional, for validation)</label>
+    <input type="text" name="actual_lengths" placeholder="e.g. 12 12 8 8 12 12 8 8" style="max-width:520px;">
+
+    <h3 style="margin-top:22px;">Where was the camera? (optional, your own notes)</h3>
+    <p class="muted">Rough measurements, e.g. "about 45 cm above the table, 20 cm left of the book". They are shown
+      next to the recovered positions and saved in the report.</p>
+    {% for v in setup.views %}
+    <label>View {{ loop.index }} ({{ v.name }})</label>
+    <input type="text" name="note{{ loop.index }}" maxlength="160" style="max-width:520px;">
+    {% endfor %}
+    <button type="submit" id="goBtn" disabled>Reconstruct</button>
+  </form>
+</div>
+
+<script>
+(function () {
+  const urls = {{ view_urls | tojson }};
+  const views = {{ setup.views | tojson }};
+  const colors = ['#ff4d4d', '#4dd2ff', '#ffd24d', '#7dff4d', '#ff4dff', '#ffffff', '#ff9f40', '#9f7dff', '#40ffbf', '#c0c0c0'];
+  const pts = [[], [], [], []];
+  const imgs = urls.map(u => { const im = new Image(); im.src = u; return im; });
+  const canvas = document.getElementById('viewCanvas');
+  const ctx = canvas.getContext('2d');
+  const loupe = document.getElementById('loupe');
+  const lctx = loupe.getContext('2d');
+  let cur = 0, scale = 1;
+
+  const tabs = document.getElementById('tabs');
+  urls.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'secondary'; b.onclick = () => { cur = i; draw(); };
+    tabs.appendChild(b);
+  });
+
+  function draw() {
+    const im = imgs[cur];
+    if (!im.complete) return;
+    scale = Math.min(1, 860 / im.width, 640 / im.height);
+    canvas.width = im.width * scale; canvas.height = im.height * scale;
+    ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+    const p = pts[cur];
+    if (p.length > 1) {
+      ctx.strokeStyle = 'rgba(255,220,0,.8)'; ctx.lineWidth = 1.5; ctx.beginPath();
+      p.forEach((q, k) => k ? ctx.lineTo(q[0] * scale, q[1] * scale) : ctx.moveTo(q[0] * scale, q[1] * scale));
+      ctx.stroke();
+    }
+    p.forEach((q, k) => {
+      ctx.fillStyle = colors[k % colors.length];
+      ctx.beginPath(); ctx.arc(q[0] * scale, q[1] * scale, 4, 0, 2 * Math.PI); ctx.fill();
+      ctx.font = 'bold 14px sans-serif'; ctx.fillText(k + 1, q[0] * scale + 6, q[1] * scale - 6);
+    });
+    [...tabs.children].forEach((b, i) => {
+      b.textContent = `View ${i + 1} (${pts[i].length})`;
+      b.classList.toggle('active', i === cur);
+    });
+    const n = pts.map(a => a.length);
+    const same = n.every(v => v === n[0]) && n[0] >= 4;
+    document.getElementById('counts').innerHTML = `Points per view: ${n.join(' / ')}<br>` +
+      (same ? 'Ready to reconstruct.' : 'Need the same number (&ge; 4) in every view.');
+    document.getElementById('goBtn').disabled = !same;
+    document.getElementById('pointsField').value = JSON.stringify(pts);
+  }
+
+  function imgPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return [(e.clientX - r.left) * (canvas.width / r.width) / scale, (e.clientY - r.top) * (canvas.height / r.height) / scale];
+  }
+
+  canvas.addEventListener('click', e => {
+    const [x, y] = imgPos(e);
+    pts[cur].push([Math.round(x * 10) / 10, Math.round(y * 10) / 10]);
+    draw();
+  });
+  canvas.addEventListener('mousemove', e => {
+    const [x, y] = imgPos(e);
+    const src = 30;  // 60 x 60 image pixels -> 180 x 180 loupe (3x)
+    lctx.imageSmoothingEnabled = false;
+    lctx.fillStyle = '#0d1214'; lctx.fillRect(0, 0, 180, 180);
+    lctx.drawImage(imgs[cur], x - src, y - src, 2 * src, 2 * src, 0, 0, 180, 180);
+    lctx.strokeStyle = '#0f0'; lctx.beginPath();
+    lctx.moveTo(90, 0); lctx.lineTo(90, 180); lctx.moveTo(0, 90); lctx.lineTo(180, 90); lctx.stroke();
+  });
+  document.getElementById('undoBtn').onclick = () => { pts[cur].pop(); draw(); };
+  document.getElementById('clearBtn').onclick = () => { pts[cur] = []; draw(); };
+  imgs.forEach(im => im.onload = draw);
+  draw();
+})();
+</script>
+{% endif %}
+
+{% if stage == "result" %}
+<div class="card">
+  <h1>Reconstruction - {{ setup.object or "planar object" }}</h1>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Area</div><div class="value">{{ "%.1f"|format(rec.area) }} cm²</div></div>
+    <div class="stat-box"><div class="label">Perimeter</div><div class="value">{{ "%.1f"|format(rec.perimeter) }} cm</div></div>
+    <div class="stat-box"><div class="label">Mean reprojection error</div><div class="value">{{ "%.2f"|format(err_ba) }} px</div></div>
+    <div class="stat-box"><div class="label">Out-of-plane RMS</div><div class="value">{{ "%.2f"|format(rec.flat_rms_cm) }} cm</div></div>
+    <div class="stat-box"><div class="label">Normals agree within</div><div class="value">{{ "%.1f"|format(rec.normal_spread) }}&deg;</div></div>
+  </div>
+  <p class="muted">Reprojection error: how far (in pixels) the reconstructed points land from your clicks when projected
+    back into each photo. Out-of-plane RMS: how far the reconstructed points are from a perfect plane, even though
+    the reconstruction never assumed they were coplanar. <a href="{{ urls.report }}" download>Download the full
+    report (JSON)</a> with camera parameters, EXIF, clicked points, poses and 3-D points.</p>
+  <figure class="wide-figure"><a href="{{ urls.scene }}" target="_blank"><img src="{{ urls.scene }}"></a>
+    <figcaption>Recovered points and the four camera positions (frustums point where each camera looked)</figcaption></figure>
+  <div class="img-grid">
+    <figure><a href="{{ urls.boundary }}" target="_blank"><img src="{{ urls.boundary }}" style="background:#fff;"></a>
+      <figcaption>Recovered boundary with edge lengths (cm)</figcaption></figure>
+    <figure><a href="{{ urls.rectified }}" target="_blank"><img src="{{ urls.rectified }}"></a>
+      <figcaption>View 1 re-rendered as seen straight from above, using the recovered plane. Yellow = recovered boundary</figcaption></figure>
+  </div>
+</div>
+
+<div class="card">
+  <h2>The four views</h2>
+  <p class="muted">Red dots = your clicks, green circles = reconstructed 3-D points projected back into the photo.</p>
+  <div class="img-grid">
+    {% for i in range(4) %}
+    <figure><a href="{{ urls['view%d'|format(i + 1)] }}" target="_blank"><img src="{{ urls['view%d'|format(i + 1)] }}"></a>
+      <figcaption>View {{ i + 1 }} - {{ setup.views[i].name }} - {{ "%.2f"|format(rec.err_ba[i].mean()) }} px</figcaption></figure>
+    {% endfor %}
+  </div>
+</div>
+
+{{ workout | safe }}
+
+<div class="card">
+  <a href="{{ url_for('hw6.sfm_points', run_id=run_id) }}"><button type="button" class="secondary">Re-click the points</button></a>
+</div>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}

@@ -4,6 +4,7 @@ import uuid
 import cv2
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 
+from .. import samples
 from . import blur
 
 bp = Blueprint("hw3", __name__)
@@ -80,4 +81,24 @@ def blur_view():
         "ksize": ksize,
         "sigma": sigma,
     }
-    return render_template("hw3/blur.html", active_page="blur", result=result)
+
+    m = out["metrics"]
+    sample_token = samples.stage(
+        "hw3", "blur", "Blur: spatial vs. frequency",
+        images=[
+            (os.path.join(output_dir, comparison_fname),
+             "Top: image, kernel, spatial result (cv2.filter2D). Bottom: image spectrum, kernel OTF, "
+             "frequency-domain result.", True),
+            (os.path.join(output_dir, diff_fname), "|spatial - frequency|, normalized to 0-255 for display"),
+        ],
+        params=[("Image", f.filename), ("Kernel", kernel_type), ("Kernel size", f"{ksize} px"),
+                ("Sigma", f"{sigma:g}" if kernel_type == "gaussian" else "n/a")],
+        metrics=[("Max abs. pixel diff", f"{m['max_abs_diff']:.2e}"),
+                 ("Mean abs. pixel diff", f"{m['mean_abs_diff']:.2e}"),
+                 ("MSE", f"{m['mse']:.2e}"),
+                 ("PSNR (spatial vs. freq)",
+                  "inf (identical)" if m["psnr_db"] is None else f"{m['psnr_db']:.1f} dB")],
+        note="Spatial and frequency results agree up to floating-point rounding, confirming the "
+             "convolution theorem f * h <-> F . H.",
+    )
+    return render_template("hw3/blur.html", active_page="blur", result=result, sample_token=sample_token)

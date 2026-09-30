@@ -1,0 +1,32 @@
+{% extends layout %}
+{% block content %}
+<div class="card">
+  <h1>Sample outputs</h1>
+  <p>Real runs of the code in {{ hw_title }}, saved exactly as they came out - inputs, output images and
+    measured numbers. Open one to see the full result.</p>
+</div>
+
+{% if not samples %}
+<div class="card">
+  <p class="muted">No samples saved yet.{% if samples_editable %} Run any tool in this homework, then click
+    <strong>Save as sample output</strong> under the result.{% endif %}</p>
+</div>
+{% endif %}
+
+<div class="sample-grid">
+  {% for s in samples %}
+  <a class="sample-tile" href="{{ url_for('samples.detail', hw=hw, sid=s.id) }}">
+    {% set stills = s.images | rejectattr("video") | list %}
+    {% if stills %}<img src="{{ stills[-1].url }}" alt="">{% endif %}
+    <div class="sample-body">
+      <span class="badge">{{ s.title }}</span>
+      {% if s.caption %}<div class="sample-caption">{{ s.caption }}</div>{% endif %}
+      {% for m in s.metrics[:2] %}
+        <div class="muted">{{ m.label }}: <strong>{{ m.value }}</strong></div>
+      {% endfor %}
+      <div class="muted">{{ s.saved_at }}</div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

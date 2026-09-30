@@ -1,0 +1,176 @@
+{# Step-by-step numbers for the SfM result. Rendered on the result page and saved with samples. #}
+{% set wk = rec.worked %}
+{% set n = rec.n_pts %}
+<div class="card">
+  <h2>Step 0 - Camera and images</h2>
+  <p>Intrinsics source: {{ setup.cam.source }} ({{ setup.cam.width|int }} &times; {{ setup.cam.height|int }}).
+    The photos were used at {{ setup.views[0].w }} &times; {{ setup.views[0].h }}, so $K$ is scaled by
+    {{ "%.4f"|format(setup.views[0].w / (setup.cam.height if swapped else setup.cam.width)) }}{% if swapped %}, with the
+    $x$/$y$ axes swapped because the photos are rotated relative to the calibration images{% endif %}:</p>
+  <div class="theory-block">
+    $$ K = {{ tex(rec.K, 2) }}, \qquad (k_1, k_2, p_1, p_2, k_3) = ({{ rec.dist.tolist()|map('round', 4)|join(',\\ ') }}) $$
+  </div>
+  <table class="result-table">
+    <tr><th>view</th><th>file</th><th>original size</th><th>camera (EXIF)</th><th>focal length / 35 mm eq.</th><th>exposure</th><th>your notes</th></tr>
+    {% for v in setup.views %}
+    <tr><td>{{ loop.index }}</td><td>{{ v.name }}</td><td>{{ v.orig_w }} &times; {{ v.orig_h }}</td>
+      <td>{{ v.exif.get('Make', '') }} {{ v.exif.get('Model', '-') }}</td>
+      <td>{{ v.exif.get('Focal length (mm)', '-') }} mm / {{ v.exif.get('35 mm equivalent (mm)', '-') }} mm</td>
+      <td>{{ v.exif.get('Exposure (s)', '-') }} s, f/{{ v.exif.get('f-number', '-') }}, ISO {{ v.exif.get('ISO', '-') }}</td>
+      <td>{{ notes[loop.index0] or '-' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Step 1 - Normalised coordinates</h2>
+  <p>Every click is undistorted and multiplied by $K^{-1}$. For point 1:</p>
+  <table class="result-table">
+    <tr><th>view</th><th>clicked pixel $\tilde{\mathbf x}$</th><th>undistorted pixel</th><th>$\mathbf m = K^{-1}\tilde{\mathbf x}$</th></tr>
+    {% for v in range(4) %}
+    <tr><td>{{ v + 1 }}</td>
+      <td>({{ "%.1f"|format(rec.obs[v][0][0]) }}, {{ "%.1f"|format(rec.obs[v][0][1]) }})</td>
+      <td>({{ "%.1f"|format(rec.obs_ud[v][0][0]) }}, {{ "%.1f"|format(rec.obs_ud[v][0][1]) }})</td>
+      <td>({{ "%.5f"|format(rec.ms[v][0][0]) }}, {{ "%.5f"|format(rec.ms[v][0][1]) }}, 1)</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Step 2 - Homographies from view 1 to views 2, 3, 4 (DLT)</h2>
+  <p>With {{ n }} points, $A$ is {{ 2 * n }} &times; 9. Its smallest singular value $\sigma_9$ would be exactly 0
+    for noise-free clicks. $\hat{\mathbf h}$ is the matching right singular vector, then un-normalised and scaled so
+    that $\sigma_2(H) = 1$, with the sign chosen for positive depth.</p>
+  {% for h in rec.homogs %}
+  <h3>View 1 &rarr; view {{ loop.index + 1 }}</h3>
+  <div class="theory-block">
+    $$ \sigma_8(A) = {{ "%.4g"|format(h.dlt_sv[-2]) }},\quad \sigma_9(A) = {{ "%.4g"|format(h.dlt_sv[-1]) }}
+       \qquad H_{ {{- loop.index + 1 -}} } = {{ tex(h.H, 4) }},\qquad K H K^{-1} = {{ tex(h.H_px, 4) }} $$
+  </div>
+  <p class="muted">Transfer error (view-1 clicks mapped by the pixel homography vs. the clicks in view {{ loop.index + 1 }}):
+    {{ "%.2f"|format(h.transfer_err) }} px on average.
+    Eigenvalues of $H^{\mathsf T}H$: {{ "%.4f"|format(h.sig2[0]) }}, {{ "%.4f"|format(h.sig2[1]) }}, {{ "%.4f"|format(h.sig2[2]) }}
+    (the middle one is 1 by construction).</p>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>Step 3 - Decomposing $H = R + \mathbf T\mathbf N^{\mathsf T}$</h2>
+  <p>Each homography gives four candidate $(R, \mathbf T, \mathbf N)$. Positive depth needs
+    $\mathbf N^{\mathsf T}\mathbf m_1 > 0$ for all {{ n }} points. Among the survivors, we pick the combination whose
+    three normals agree best.</p>
+  {% for sols in rec.decomps %}
+  {% set v = loop.index0 %}
+  <h3>View {{ v + 2 }}</h3>
+  <table class="result-table">
+    <tr><th>candidate</th><th>$\mathbf N$</th><th>$\mathbf T = \mathbf t/d$</th><th>rotation angle</th><th>points in front</th><th></th></tr>
+    {% for R, T, N in sols %}
+    <tr {% if loop.index0 == rec.choice[v] %}style="background:rgba(201,118,47,.15)"{% endif %}>
+      <td>{{ loop.index }}</td>
+      <td>({{ "%.3f"|format(N[0]) }}, {{ "%.3f"|format(N[1]) }}, {{ "%.3f"|format(N[2]) }})</td>
+      <td>({{ "%.3f"|format(T[0]) }}, {{ "%.3f"|format(T[1]) }}, {{ "%.3f"|format(T[2]) }})</td>
+      <td>{{ "%.1f"|format(wk.rot_deg[v][loop.index0]) }}&deg;</td>
+      <td>{{ wk.depth_ok[v][loop.index0] }} / {{ n }}</td>
+      <td>{% if loop.index0 == rec.choice[v] %}<strong>chosen</strong>{% elif wk.depth_ok[v][loop.index0] < n %}behind camera{% else %}normal disagrees{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+  <p>The chosen normals are within {{ "%.2f"|format(rec.normal_spread) }}&deg; of each other (sum of pairwise angles).
+    Their average, the plane normal in camera 1, is
+    $\mathbf N = ({{ "%.4f"|format(rec.N_consensus[0]) }}, {{ "%.4f"|format(rec.N_consensus[1]) }}, {{ "%.4f"|format(rec.N_consensus[2]) }})$.</p>
+</div>
+
+<div class="card">
+  <h2>Step 4 - Camera matrices</h2>
+  <p>With $d = 1$ (plane-distance units), the normalised camera matrices from step 3 are:</p>
+  <div class="theory-block">
+    {% for R, T in rec.poses_lin %}
+    $$ [R_{ {{- loop.index -}} } \mid \mathbf T_{ {{- loop.index -}} }] = {{ tex(np.hstack([R, T.reshape(3, 1)]), 4) }} $$
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Step 5 - Triangulating point 1</h2>
+  <p>Two rows per view, $x\,\mathbf p^{3\mathsf T} - \mathbf p^{1\mathsf T}$ and $y\,\mathbf p^{3\mathsf T} - \mathbf p^{2\mathsf T}$,
+    stacked into an 8 &times; 4 matrix:</p>
+  <div class="theory-block">
+    $$ A = {{ tex(rec.tri[0].A, 4) }} $$
+    $$ \sigma(A) = ({{ rec.tri[0].S.tolist()|map('round', 5)|join(',\\ ') }}) \;\Rightarrow\;
+       \tilde{\mathbf X} = {{ texc(rec.tri[0].Xh, 5) }} \;\Rightarrow\;
+       \mathbf X_1 = \tilde{\mathbf X}_{1:3}/\tilde X_4 = {{ texc(rec.X_lin[0], 4) }} $$
+  </div>
+  <p>Check with the plane: $\mathbf N^{\mathsf T}\mathbf X_1 = {{ "%.4f"|format(wk.N_dot_X) }}$ (should be $d = 1$), and the
+    one-view shortcut $\mathbf m_1/(\mathbf N^{\mathsf T}\mathbf m_1) = ({{ "%.4f"|format(wk.X_plane[0]) }}, {{ "%.4f"|format(wk.X_plane[1]) }}, {{ "%.4f"|format(wk.X_plane[2]) }})$.</p>
+  <p>Projecting $\mathbf X_1$ back into every view, $\tilde{\mathbf x} = K(R\mathbf X_1 + \mathbf T)$ and then dividing by the third coordinate:</p>
+  <table class="result-table">
+    <tr><th>view</th><th>$R\mathbf X_1 + \mathbf T$</th><th>$K(R\mathbf X_1 + \mathbf T)$</th><th>projected pixel</th><th>clicked (undistorted)</th><th>error</th></tr>
+    {% for p in wk.reproj1 %}
+    <tr><td>{{ loop.index }}</td>
+      <td>({{ "%.4f"|format(p.cam[0]) }}, {{ "%.4f"|format(p.cam[1]) }}, {{ "%.4f"|format(p.cam[2]) }})</td>
+      <td>({{ "%.1f"|format(p.xh[0]) }}, {{ "%.1f"|format(p.xh[1]) }}, {{ "%.4f"|format(p.xh[2]) }})</td>
+      <td>({{ "%.1f"|format(p.px[0]) }}, {{ "%.1f"|format(p.px[1]) }})</td>
+      <td>({{ "%.1f"|format(p.obs[0]) }}, {{ "%.1f"|format(p.obs[1]) }})</td>
+      <td>{{ "%.2f"|format(((p.px[0] - p.obs[0]) ** 2 + (p.px[1] - p.obs[1]) ** 2) ** 0.5) }} px</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2>Step 6 - Bundle adjustment</h2>
+  <p>All poses (view 1 fixed) and all {{ n }} points refined together: {{ rec.ba_nfev }} function evaluations, final cost
+    {{ "%.3f"|format(rec.ba_cost) }} px². Mean reprojection error per view:</p>
+  <table class="result-table">
+    <tr><th>view</th>{% for i in range(4) %}<th>{{ i + 1 }}</th>{% endfor %}</tr>
+    <tr><td>linear (steps 2-5)</td>{% for e in rec.err_lin %}<td>{{ "%.2f"|format(e.mean()) }} px</td>{% endfor %}</tr>
+    <tr><td>after bundle adjustment</td>{% for e in rec.err_ba %}<td>{{ "%.2f"|format(e.mean()) }} px</td>{% endfor %}</tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Step 7 - Scale, plane and boundary</h2>
+  {% set a = rec.known[0] %}{% set b = rec.known[1] %}
+  <div class="theory-block">
+    $$ s = \frac{L}{\lVert \mathbf X_{ {{- a + 1 -}} } - \mathbf X_{ {{- b + 1 -}} } \rVert}
+         = \frac{ {{- "%.2f"|format(rec.known[2]) -}} \ \text{cm}}{ {{- "%.5f"|format(wk.ab_units) -}} } = {{ "%.3f"|format(rec.scale) }}\ \text{cm per unit} $$
+  </div>
+  <p>So camera 1 was $d = s = {{ "%.1f"|format(rec.scale) }}$ cm from the object's plane. The plane fitted to all
+    {{ n }} points has an RMS out-of-plane distance of {{ "%.3f"|format(rec.flat_rms_cm) }} cm. In the object frame
+    (origin at point {{ a + 1 }}, $x$ along {{ a + 1 }}&rarr;{{ b + 1 }}, $z$ towards the camera) the points are:</p>
+  <table class="result-table">
+    <tr><th>point</th><th>x (cm)</th><th>y (cm)</th><th>z (cm)</th><th>$u_jv_{j+1} - u_{j+1}v_j$</th></tr>
+    {% for p in rec.uvz %}
+    <tr><td>{{ loop.index }}</td><td>{{ "%.2f"|format(p[0]) }}</td><td>{{ "%.2f"|format(p[1]) }}</td><td>{{ "%.3f"|format(p[2]) }}</td>
+      <td>{{ "%.2f"|format(wk.shoelace[loop.index0]) }}</td></tr>
+    {% endfor %}
+  </table>
+  <p>Shoelace formula: $A = \tfrac12\left|\sum_j (u_jv_{j+1} - u_{j+1}v_j)\right| = \tfrac12\,|{{ "%.2f"|format(wk.shoelace|sum) }}| = {{ "%.2f"|format(rec.area) }}$ cm².</p>
+  <table class="result-table">
+    <tr><th>edge</th><th>recovered (cm)</th><th>actual (cm)</th><th>error</th></tr>
+    {% for e in rec.edges %}
+    <tr><td>{{ e.a }} &rarr; {{ e.b }}</td><td>{{ "%.2f"|format(e.length) }}</td>
+      <td>{{ "%.2f"|format(e.actual) if e.actual else "-" }}</td>
+      <td>{% if e.actual %}{{ "%+.2f"|format(e.err) }} cm ({{ "%+.1f"|format(e.err_pct) }}%){% else %}-{% endif %}</td></tr>
+    {% endfor %}
+    <tr><td><strong>perimeter</strong></td><td><strong>{{ "%.2f"|format(rec.perimeter) }}</strong></td>
+      {% set act = rec.edges|selectattr('actual')|map(attribute='actual')|list %}
+      <td>{{ "%.2f"|format(act|sum) if act|length == n else "-" }}</td><td></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Step 8 - Where the cameras were</h2>
+  <p>$\mathbf C_i = -R_i^{\mathsf T}\mathbf T_i$, moved into the object frame and scaled to cm. "Tilt" is the angle
+    between the camera's viewing direction and the straight-down direction onto the object (0&deg; = looking
+    straight at it).</p>
+  <table class="result-table">
+    <tr><th>view</th><th>position x, y, z (cm)</th><th>height above object</th><th>distance to object centre</th><th>tilt</th><th>your notes</th></tr>
+    {% for c in rec.cameras %}
+    <tr><td>{{ c.view }}</td>
+      <td>({{ "%.1f"|format(c.C_obj[0]) }}, {{ "%.1f"|format(c.C_obj[1]) }}, {{ "%.1f"|format(c.C_obj[2]) }})</td>
+      <td>{{ "%.1f"|format(c.height) }} cm</td><td>{{ "%.1f"|format(c.dist_to_center) }} cm</td><td>{{ "%.1f"|format(c.tilt) }}&deg;</td>
+      <td>{{ notes[loop.index0] or '-' }}</td></tr>
+    {% endfor %}
+  </table>
+</div>

@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 
+from .. import samples
 from . import metrics as mx
 from . import rgb_segmentation as rgbseg
 from . import thermal_segmentation as thermseg
@@ -33,6 +34,20 @@ def _save_png(output_dir, run_id, name, arr):
     fname = f"{run_id}_{name}.png"
     cv2.imwrite(os.path.join(output_dir, fname), arr)
     return url_for("static", filename=f"hw4/outputs/{fname}")
+
+
+def _stage_sample(page, title, output_dir, run_id, images, params, sam2):
+    """Snapshots a segmentation run for the sample-outputs gallery."""
+    image_list = [(os.path.join(output_dir, f"{run_id}_{name}.png"), caption) for name, caption in images]
+    metrics = []
+    if sam2:
+        metrics = [("IoU vs. SAM2", f"{sam2['iou']:.3f}"), ("Dice vs. SAM2", f"{sam2['dice']:.3f}")]
+        image_list += [
+            (os.path.join(output_dir, f"{run_id}_sam2_mask.png"), "SAM2 mask (uploaded)"),
+            (os.path.join(output_dir, f"{run_id}_sam2_overlay.png"),
+             "Agreement: white = both, green = ours only, red = SAM2 only"),
+        ]
+    return samples.stage("hw4", page, title, images=image_list, params=params, metrics=metrics)
 
 
 def _sam2_comparison(sam2_file, upload_dir, run_id, our_mask, shape_hw, output_dir):
@@ -129,8 +144,17 @@ def rgb_view():
         sam2 = _sam2_comparison(sam2_file, upload_dir, run_id, mask, img.shape[:2], output_dir)
 
     result = {"urls": urls, "rect": rect, "sam2": sam2}
+    sample_token = _stage_sample(
+        "rgb", "RGB boundary (GrabCut)", output_dir, run_id,
+        images=[("rgb_seed_rect", "GrabCut seed rectangle"), ("rgb_mask", "Segmentation mask"),
+                ("rgb_boundary", "Extracted boundary (largest contour)")],
+        params=[("Seed box", "automatic (inset 5%)" if use_auto else "drawn by hand"),
+                ("Box (x, y, w, h)", ", ".join(str(v) for v in rect))],
+        sam2=sam2,
+    )
     return render_template("hw4/rgb.html", active_page="rgb", image_url=urls["original"],
-                            run_id=run_id, img_w=img.shape[1], img_h=img.shape[0], result=result)
+                            run_id=run_id, img_w=img.shape[1], img_h=img.shape[0], result=result,
+                            sample_token=sample_token)
 
 
 @bp.route("/thermal", methods=["GET", "POST"])
@@ -173,4 +197,14 @@ def thermal_view():
         sam2 = _sam2_comparison(sam2_file, upload_dir, run_id, mask, img.shape[:2], output_dir)
 
     result = {"urls": urls, "sam2": sam2, "hot_is_bright": hot_is_bright}
-    return render_template("hw4/thermal.html", active_page="thermal", result=result)
+    sample_token = _stage_sample(
+        "thermal", "Thermal boundary (Otsu)", output_dir, run_id,
+        images=[("thermal_original", "Thermal input"),
+                ("thermal_gray", "Grayscale intensity used for thresholding"),
+                ("thermal_mask", "Segmentation mask (Otsu + morphology + largest blob)"),
+                ("thermal_boundary", "Extracted boundary (largest contour)")],
+        params=[("Image", f.filename), ("Palette", "white-hot" if hot_is_bright else "black-hot")],
+        sam2=sam2,
+    )
+    return render_template("hw4/thermal.html", active_page="thermal", result=result,
+                            sample_token=sample_token)

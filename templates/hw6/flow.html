@@ -1,0 +1,121 @@
+{% extends "hw6/_layout.html" %}
+{% block content %}
+<div class="card">
+  <h1>Part 1 - Optical flow as a video</h1>
+  <p>Upload one of your videos and choose a 30 s window with motion in it. Every consecutive pair of frames goes
+    through dense Farneback optical flow. The result is a video with the flow drawn two ways: arrows on the
+    frame, and a colour-coded field where hue is the direction (see the wheel in the corner) and brightness is the
+    speed. The same pass measures how much, where and which way things move, and splits camera motion from
+    object motion. See the <a href="{{ url_for('hw6.theory') }}#info">theory</a> for why those numbers mean
+    what they mean.</p>
+  <form method="POST" enctype="multipart/form-data" onsubmit="document.getElementById('busy').style.display='block'">
+    <label>Video (MP4 / MOV)</label>
+    <input type="file" name="video" accept="video/*" required>
+
+    <label>Short name for this video (shown on the results)</label>
+    <input type="text" name="label" placeholder="e.g. Street traffic, static camera" maxlength="80">
+
+    <label>Start at (s)</label>
+    <input type="number" name="start" value="0" min="0" step="0.5">
+
+    <label>Length to process (s)</label>
+    <input type="number" name="duration" value="30" min="1" max="60" step="1">
+
+    <label>Processing size (longest side, px)</label>
+    <select name="max_dim">
+      <option value="360">360 - fastest</option>
+      <option value="480" selected>480</option>
+      <option value="640">640 - sharper, about 2x slower</option>
+    </select>
+
+    <label>Use every n-th frame</label>
+    <select name="step">
+      <option value="1" selected>every frame</option>
+      <option value="2">every 2nd frame (half the time, flow per 2 frames)</option>
+    </select>
+
+    <label>"Moving" threshold (px/frame)</label>
+    <input type="number" name="threshold" value="1.0" min="0.1" step="0.1">
+
+    <button type="submit">Compute optical flow</button>
+    <p class="muted" id="busy" style="display:none;">Working... a 30 s clip takes a minute or two. Leave this tab open.</p>
+  </form>
+</div>
+
+{% if result %}
+{% set s = result.s %}
+<div class="card">
+  <h2>Flow video - {{ result.label }}</h2>
+  <p class="muted">{{ "%.1f"|format(s.duration) }} s from t = {{ "%.1f"|format(s.start) }} s,
+    {{ s.frames }} frames at {{ "%.1f"|format(s.fps) }} fps{% if s.step > 1 %} (every {{ s.step }}nd frame){% endif %},
+    processed at {{ s.proc_w }} &times; {{ s.proc_h }} (original {{ s.orig_w }} &times; {{ s.orig_h }})
+    in {{ "%.0f"|format(s.elapsed) }} s. Colour scale saturates at {{ "%.1f"|format(s.color_max) }} px/frame.</p>
+  <video src="{{ result.urls.video }}" controls loop muted playsinline style="width:100%;border-radius:8px;border:1px solid var(--border);"></video>
+  <p class="muted">Left: flow vectors (x3 length) on the frame. Right: colour-coded flow, black = not moving.
+    <a href="{{ result.urls.video }}" download>Download the video</a> &middot;
+    <a href="{{ result.urls.csv }}" download>per-frame numbers (CSV)</a></p>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Mean speed</div><div class="value">{{ "%.2f"|format(s.mean_mag) }} px/f</div></div>
+    <div class="stat-box"><div class="label">Peak speed (t = {{ "%.1f"|format(s.peak_t) }} s)</div><div class="value">{{ "%.2f"|format(s.peak_mag) }} px/f</div></div>
+    <div class="stat-box"><div class="label">Pixels moving (avg)</div><div class="value">{{ "%.1f"|format(s.moving_pct) }}%</div></div>
+    <div class="stat-box"><div class="label">Moving on their own</div><div class="value">{{ "%.1f"|format(s.object_pct) }}%</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>What can be inferred from this flow</h2>
+  <p>These sentences are generated from the measured numbers. The figures below are the evidence for each one.</p>
+  <ul>
+    {% for o in s.observations %}<li>{{ o }}</li>{% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <h2>Evidence 1 - motion over time</h2>
+  <p>Top: how fast things move. Second: what fraction of the image moves, with and without the camera's own
+    motion. Third: the global translation from the affine fit (non-zero means the camera pans or tilts). Bottom:
+    divergence (zoom / moving forward) and curl (roll). The dashed line marks the busiest frame, shown below.</p>
+  <figure class="wide-figure"><a href="{{ result.urls.timeline }}" target="_blank"><img src="{{ result.urls.timeline }}"></a></figure>
+</div>
+
+<div class="card">
+  <h2>Evidence 2 - the busiest frame (t = {{ "%.2f"|format(result.peak_t) }} s)</h2>
+  <div class="img-grid">
+    <figure><img src="{{ result.urls.peak_arrows }}"><figcaption>Flow vectors</figcaption></figure>
+    <figure><img src="{{ result.urls.peak_color }}"><figcaption>Colour-coded flow</figcaption></figure>
+    <figure><img src="{{ result.urls.peak_mask }}"><figcaption>Red = moving independently of the camera (motion segmentation)</figcaption></figure>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Evidence 3 - where and which way</h2>
+  <div class="img-grid">
+    <figure><img src="{{ result.urls.heatmap }}"><figcaption>Average |flow| per pixel over the clip. With a moving camera, near things are brighter (parallax ~ 1/depth)</figcaption></figure>
+    <figure><img src="{{ result.urls.heatmap_obj }}"><figcaption>Average motion left after removing the camera's global motion: where objects move</figcaption></figure>
+    <figure><img src="{{ result.urls.rose }}" style="background:#fff;"><figcaption>Direction of motion on screen, weighted by speed</figcaption></figure>
+  </div>
+</div>
+
+{% if result.snaps %}
+<div class="card">
+  <h2>Evidence 4 - frames through the clip</h2>
+  {% for sn in result.snaps %}
+  <h3>t = {{ "%.2f"|format(sn.t) }} s</h3>
+  <div class="img-grid">
+    <figure><img src="{{ sn.arrows }}"></figure>
+    <figure><img src="{{ sn.color }}"></figure>
+    <figure><img src="{{ sn.mask }}"></figure>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Next: validate tracking on two frames of this video</h2>
+  <p>Part 2 takes two consecutive frames from this same video. The busiest moment (t = {{ "%.2f"|format(result.peak_t) }} s)
+    is a good choice because the points actually move there.</p>
+  <a href="{{ url_for('hw6.tracking_view', run_id=result.run_id, t='%.2f'|format(result.peak_t)) }}"><button type="button">Open two-frame tracking</button></a>
+</div>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,61 @@
+{
+  "hw": "hw4",
+  "page": "thermal",
+  "title": "Thermal boundary (Otsu)",
+  "images": [
+    {
+      "file": "00.png",
+      "caption": "Thermal input",
+      "wide": false
+    },
+    {
+      "file": "01.png",
+      "caption": "Grayscale intensity used for thresholding",
+      "wide": false
+    },
+    {
+      "file": "02.png",
+      "caption": "Segmentation mask (Otsu + morphology + largest blob)",
+      "wide": false
+    },
+    {
+      "file": "03.png",
+      "caption": "Extracted boundary (largest contour)",
+      "wide": false
+    },
+    {
+      "file": "04.png",
+      "caption": "SAM2 mask (uploaded)",
+      "wide": false
+    },
+    {
+      "file": "05.png",
+      "caption": "Agreement: white = both, green = ours only, red = SAM2 only",
+      "wide": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "IoU vs. SAM2",
+      "value": "0.007"
+    },
+    {
+      "label": "Dice vs. SAM2",
+      "value": "0.014"
+    }
+  ],
+  "params": [
+    {
+      "label": "Image",
+      "value": "suwan_test.jpg"
+    },
+    {
+      "label": "Palette",
+      "value": "white-hot"
+    }
+  ],
+  "table_html": null,
+  "note": null,
+  "caption": "",
+  "saved_at": "2026-09-28 09:50"
+}

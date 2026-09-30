@@ -5,4 +5,5 @@
   <a class="nav-link {{ 'current' if active_page == 'calibrate' }}" href="{{ url_for('hw2.calibrate_view') }}">1. Calibration</a>
   <a class="nav-link {{ 'current' if active_page == 'measure' }}" href="{{ url_for('hw2.measure_view') }}">2. Measurement</a>
   <a class="nav-link {{ 'current' if active_page == 'validate' }}" href="{{ url_for('hw2.validate_view') }}">3. Validation</a>
+  <a class="nav-link samples-link {{ 'current' if active_page == 'samples' }}" href="{{ url_for('samples.gallery', hw='hw2') }}">Sample outputs</a>
 {% endblock %}

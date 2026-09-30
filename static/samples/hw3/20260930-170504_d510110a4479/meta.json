@@ -1,0 +1,61 @@
+{
+  "hw": "hw3",
+  "page": "blur",
+  "title": "Blur: spatial vs. frequency",
+  "images": [
+    {
+      "file": "00.png",
+      "caption": "Top: image, kernel, spatial result (cv2.filter2D). Bottom: image spectrum, kernel OTF, frequency-domain result.",
+      "wide": true,
+      "video": false
+    },
+    {
+      "file": "01.png",
+      "caption": "|spatial - frequency|, normalized to 0-255 for display",
+      "wide": false,
+      "video": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Max abs. pixel diff",
+      "value": "4.55e-13"
+    },
+    {
+      "label": "Mean abs. pixel diff",
+      "value": "6.41e-14"
+    },
+    {
+      "label": "MSE",
+      "value": "6.81e-27"
+    },
+    {
+      "label": "PSNR (spatial vs. freq)",
+      "value": "inf (identical)"
+    }
+  ],
+  "params": [
+    {
+      "label": "Image",
+      "value": "PatanImage.jpg"
+    },
+    {
+      "label": "Kernel",
+      "value": "gaussian"
+    },
+    {
+      "label": "Kernel size",
+      "value": "25 px"
+    },
+    {
+      "label": "Sigma",
+      "value": "5"
+    }
+  ],
+  "table_html": null,
+  "table_title": null,
+  "math": false,
+  "note": "Spatial and frequency results agree up to floating-point rounding, confirming the convolution theorem f * h <-> F . H.",
+  "caption": "",
+  "saved_at": "2026-09-30 17:05"
+}

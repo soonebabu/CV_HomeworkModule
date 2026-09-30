@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block sidebar_brand %}Homework 6 &middot; Motion{% endblock %}
+{% block sidebar_links %}
+  <a class="nav-link {{ 'current' if active_page == 'overview' }}" href="{{ url_for('hw6.overview') }}">Overview</a>
+  <a class="nav-link {{ 'current' if active_page == 'flow' }}" href="{{ url_for('hw6.flow_view') }}">1. Optical flow video</a>
+  <a class="nav-link {{ 'current' if active_page == 'tracking' }}" href="{{ url_for('hw6.tracking_view') }}">2. Two-frame tracking</a>
+  <a class="nav-link {{ 'current' if active_page == 'sfm' }}" href="{{ url_for('hw6.sfm_view') }}">3. Structure from motion</a>
+  <a class="nav-link {{ 'current' if active_page == 'theory' }}" href="{{ url_for('hw6.theory') }}">Theory &amp; derivations</a>
+  <a class="nav-link samples-link {{ 'current' if active_page == 'samples' }}" href="{{ url_for('samples.gallery', hw='hw6') }}">Sample outputs</a>
+{% endblock %}

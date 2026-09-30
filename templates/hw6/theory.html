@@ -1,0 +1,342 @@
+{% extends "hw6/_layout.html" %}
+{% block head %}
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']], tags: 'ams' } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Theory and derivations</h1>
+  <p>Sections 1-3 are about motion between frames (parts 1 and 2 of the homework), section 4 is bilinear
+    interpolation, and section 5 is the structure-from-motion part. The pages that run the code print the same
+    quantities with real numbers plugged in.</p>
+  <ol class="muted">
+    <li><a href="#flow">Optical flow from brightness constancy</a></li>
+    <li><a href="#info">What optical flow tells us</a></li>
+    <li><a href="#lk">Tracking equations for two frames (Lucas-Kanade)</a></li>
+    <li><a href="#bilinear">Bilinear interpolation</a></li>
+    <li><a href="#sfm">Structure from motion with a planar object</a></li>
+  </ol>
+</div>
+
+<div class="card" id="flow">
+  <h2>1. Optical flow from brightness constancy</h2>
+  <p>Let $I(x, y, t)$ be the image intensity. A scene point that is at $(x, y)$ at time $t$ moves to
+    $(x + \delta x,\, y + \delta y)$ at time $t + \delta t$. The basic assumption is <strong>brightness
+    constancy</strong>: the point keeps its brightness while it moves,</p>
+  <div class="theory-block">
+    $$ I(x + \delta x,\; y + \delta y,\; t + \delta t) = I(x, y, t). $$
+  </div>
+  <p>For small motion, expand the left side in a first-order Taylor series:</p>
+  <div class="theory-block">
+    $$ I(x, y, t) + \frac{\partial I}{\partial x}\delta x + \frac{\partial I}{\partial y}\delta y
+       + \frac{\partial I}{\partial t}\delta t + \text{h.o.t.} = I(x, y, t). $$
+  </div>
+  <p>Cancel $I(x,y,t)$, divide by $\delta t$ and let $\delta t \to 0$. With $u = dx/dt$, $v = dy/dt$ (the
+    optical flow) and $I_x, I_y, I_t$ the partial derivatives:</p>
+  <div class="theory-block">
+    $$ I_x u + I_y v + I_t = 0 \qquad\Longleftrightarrow\qquad \nabla I^{\mathsf T}\mathbf{v} = -I_t .
+       \label{ofce} $$
+  </div>
+  <p>This is the <strong>optical flow constraint equation</strong>. It is one equation in two unknowns per
+    pixel, so it only fixes the component of the motion along the gradient (the <em>normal flow</em>),</p>
+  <div class="theory-block">
+    $$ v_\perp = \frac{-I_t}{\lVert \nabla I \rVert}, $$
+  </div>
+  <p>while the component along the edge is invisible - the <strong>aperture problem</strong>. You can see it
+    in the flow videos: on a flat, textureless wall or a clear sky the flow is zero even when the camera pans,
+    because there's no gradient to see the motion with. Every flow method adds an extra assumption to fix
+    this. Lucas-Kanade (section 3) assumes the flow is constant in a small window. Farneback, which part 1
+    uses for dense flow, approximates each neighbourhood by a quadratic polynomial
+    $f(\mathbf{x}) \approx \mathbf{x}^{\mathsf T}A\mathbf{x} + \mathbf{b}^{\mathsf T}\mathbf{x} + c$. If the
+    second frame is the first one shifted by $\mathbf{d}$, then $f_2(\mathbf{x}) = f_1(\mathbf{x} - \mathbf{d})$,
+    so $A_2 = A_1$ and $\mathbf{b}_2 = \mathbf{b}_1 - 2A_1\mathbf{d}$. That gives
+    $\mathbf{d} = -\tfrac12 A_1^{-1}(\mathbf{b}_2 - \mathbf{b}_1)$ at every pixel, solved in a window and
+    coarse-to-fine on a pyramid.</p>
+</div>
+
+<div class="card" id="info">
+  <h2>2. What optical flow tells us</h2>
+  <p>Take a pinhole camera with focal length $f$ moving through a static scene with translational velocity
+    $(V_x, V_y, V_z)$ and angular velocity $\boldsymbol\omega$. A scene point at depth $Z$, seen at image
+    position $(x, y)$ (measured from the principal point), has image flow (Longuet-Higgins &amp; Prazdny)</p>
+  <div class="theory-block">
+    $$ \begin{bmatrix} u \\ v \end{bmatrix} = \frac{1}{Z}\begin{bmatrix} -f & 0 & x \\ 0 & -f & y \end{bmatrix}
+       \begin{bmatrix} V_x \\ V_y \\ V_z \end{bmatrix}
+       + \begin{bmatrix} \frac{xy}{f} & -\left(f + \frac{x^2}{f}\right) & y \\
+                          f + \frac{y^2}{f} & -\frac{xy}{f} & -x \end{bmatrix}\boldsymbol\omega . $$
+  </div>
+  <p>An object moving in front of a still camera produces the same flow with the signs of its velocity
+    reversed. Almost everything the flow page reports comes out of this equation:</p>
+  <ul>
+    <li><strong>Where and when something moves</strong> - thresholding $\lVert\mathbf v\rVert$ segments the
+      moving pixels in every frame (the red mask, the "% of pixels moving" curve, the heat map of average
+      motion). This is motion detection/segmentation without any model of what the object is.</li>
+    <li><strong>Direction and speed</strong> - $\operatorname{atan2}(v, u)$ is the direction on screen (the
+      colour wheel and the direction histogram) and $\lVert\mathbf v\rVert$ in px/frame times the frame rate is
+      px/s. It only becomes m/s with depth: for motion parallel to the image plane,
+      $V \approx \lVert\mathbf v\rVert\, Z / f$.</li>
+    <li><strong>Camera motion vs. object motion</strong> - the rotational term doesn't depend on $Z$ and is
+      smooth over the whole image, and camera translation produces a field that is smooth wherever depth is.
+      So we fit a global affine field $u = a_0 + a_1x + a_2y$, $v = b_0 + b_1x + b_2y$ to every frame:
+      <ul>
+        <li>$(a_0, b_0)$ is a <em>pan/tilt</em> (content moves opposite to the direction the camera turns);</li>
+        <li>the <em>divergence</em> $\nabla\cdot\mathbf v = a_1 + b_2$ is positive when the field expands - the
+          camera moves forward or something approaches (pure $V_z$ gives $u = xV_z/Z$, $v = yV_z/Z$, so
+          $\nabla\cdot\mathbf v = 2V_z/Z$ and the <em>time to contact</em> is $Z/V_z = 2/\nabla\cdot\mathbf v$
+          without knowing $Z$ or $V_z$ separately);</li>
+        <li>the <em>curl</em> $b_1 - a_2$ is rotation about the viewing axis (camera roll).</li>
+      </ul>
+      Whatever the global field doesn't explain is <em>independent motion</em> - things moving on their own.</li>
+    <li><strong>Relative depth</strong> - for a translating camera the flow is proportional to $1/Z$, so near
+      objects move faster across the image than far ones (motion parallax). In a walking or panning video
+      the heat map of flow magnitude is roughly an inverse-depth map.</li>
+    <li><strong>Boundaries</strong> - discontinuities in the flow field mark occlusion boundaries (edges of
+      moving objects), even when the colours on both sides are similar.</li>
+  </ul>
+</div>
+
+<div class="card" id="lk">
+  <h2>3. Tracking equations for two frames (Lucas-Kanade)</h2>
+  <h3>Setting up the problem</h3>
+  <p>Take two consecutive frames, $I(\mathbf x) = I(x, y, t)$ and $J(\mathbf x) = I(x, y, t+1)$, and a feature
+    at pixel $\mathbf u = (u_x, u_y)$ in $I$. Tracking means finding the displacement
+    $\mathbf d = (d_x, d_y)$ so that $\mathbf u + \mathbf d$ in $J$ is "the same point". One pixel gives only
+    one equation (the aperture problem), so assume every pixel in a small window $W$ around $\mathbf u$
+    (21 &times; 21 in the code) moves by the same $\mathbf d$, and choose $\mathbf d$ to minimise the sum of
+    squared differences:</p>
+  <div class="theory-block">
+    $$ \varepsilon(\mathbf d) = \sum_{\mathbf x \in W} \big( I(\mathbf x) - J(\mathbf x + \mathbf d) \big)^2 . $$
+  </div>
+
+  <h3>Linearising</h3>
+  <p>Write $\mathbf d = \mathbf d_k + \boldsymbol\delta$, where $\mathbf d_k$ is the current estimate and
+    $\boldsymbol\delta$ a small correction, and Taylor-expand $J$ around $\mathbf x + \mathbf d_k$:</p>
+  <div class="theory-block">
+    $$ J(\mathbf x + \mathbf d_k + \boldsymbol\delta) \approx J(\mathbf x + \mathbf d_k)
+       + \nabla J(\mathbf x + \mathbf d_k)^{\mathsf T}\boldsymbol\delta
+       \approx J(\mathbf x + \mathbf d_k) + \nabla I(\mathbf x)^{\mathsf T}\boldsymbol\delta . $$
+  </div>
+  <p>The last step uses $\nabla J \approx \nabla I$, which holds once the two patches are aligned. It also
+    means the gradients only have to be computed once. Define the per-pixel difference
+    $\delta I_k(\mathbf x) = I(\mathbf x) - J(\mathbf x + \mathbf d_k)$. Then</p>
+  <div class="theory-block">
+    $$ \varepsilon(\boldsymbol\delta) \approx \sum_{W} \big( \delta I_k - I_x\delta_x - I_y\delta_y \big)^2 . $$
+  </div>
+  <p>Set the derivative to zero:</p>
+  <div class="theory-block">
+    $$ \frac{\partial\varepsilon}{\partial\boldsymbol\delta}
+       = -2\sum_W \begin{bmatrix} I_x \\ I_y \end{bmatrix}\big(\delta I_k - I_x\delta_x - I_y\delta_y\big) = \mathbf 0
+       \;\;\Longrightarrow\;\;
+       \underbrace{\begin{bmatrix} \sum I_x^2 & \sum I_xI_y \\ \sum I_xI_y & \sum I_y^2 \end{bmatrix}}_{G}
+       \boldsymbol\delta
+       = \underbrace{\begin{bmatrix} \sum \delta I_k\, I_x \\ \sum \delta I_k\, I_y \end{bmatrix}}_{\mathbf b_k} . $$
+  </div>
+  <p>So each step solves the 2 &times; 2 linear system $G\boldsymbol\delta = \mathbf b_k$ and updates the estimate
+    (a Newton-Raphson / Gauss-Newton iteration):</p>
+  <div class="theory-block">
+    $$ \mathbf d_{k+1} = \mathbf d_k + G^{-1}\mathbf b_k, \qquad \mathbf d_0 = \mathbf 0,
+       \qquad \text{stop when } \lVert G^{-1}\mathbf b_k\rVert < 0.01\ \text{px}. $$
+  </div>
+  <p>With $\mathbf d_k = \mathbf 0$ and $I_t = J - I = -\delta I_0$, the first step is exactly the least-squares
+    solution of the flow constraint $I_x u + I_y v + I_t = 0$ stacked over the window, so this is equation
+    $\eqref{ofce}$ solved properly. The tracked position in the second frame is</p>
+  <div class="theory-block">
+    $$ \mathbf u' = \mathbf u + \mathbf d . $$
+  </div>
+  <p>This predicted location is what part 2 checks against the actual pixel location.</p>
+
+  <h3>When can a point be tracked?</h3>
+  <p>$G$ (the structure tensor) has to be invertible and well conditioned. With eigenvalues
+    $\lambda_1 \ge \lambda_2$:</p>
+  <ul>
+    <li>both small - a flat patch, nothing to track;</li>
+    <li>$\lambda_1 \gg \lambda_2 \approx 0$ - an edge, only the normal component is determined (the aperture
+      problem again);</li>
+    <li>both large - a corner, $\mathbf d$ is well determined.</li>
+  </ul>
+  <p>That is why we track Shi-Tomasi corners, which are the points that maximise $\lambda_2$ ("good features to
+    track").</p>
+
+  <h3>Large motion: pyramids</h3>
+  <p>The Taylor expansion only holds for displacements of about a pixel or two. For larger motion, build
+    Gaussian pyramids $I^L, J^L$ (each level half the size of the one below, $L = 0\ldots3$), solve at the
+    coarsest level where the motion is small, and pass the estimate down:</p>
+  <div class="theory-block">
+    $$ \mathbf g^{L_{\max}} = \mathbf 0, \qquad \mathbf g^{L-1} = 2\,(\mathbf g^L + \mathbf d^L), \qquad
+       \mathbf d = \mathbf g^0 + \mathbf d^0 , $$
+  </div>
+  <p>where $\mathbf d^L$ is the result of the iteration above at level $L$, run on $J^L(\mathbf x + \mathbf g^L +
+    \mathbf d_k)$.</p>
+
+  <h3>Where interpolation comes in</h3>
+  <p>$\mathbf x + \mathbf g + \mathbf d_k$ is almost never an integer pixel position, so every iteration has to
+    sample $J$ between pixels. The same goes for the window around $\mathbf u / 2^L$ on the coarse levels. The
+    code does this with bilinear interpolation, derived next.</p>
+</div>
+
+<div class="card" id="bilinear">
+  <h2>4. Bilinear interpolation</h2>
+  <p>We want $f(x, y)$ at a non-integer point. Let $x_0 = \lfloor x\rfloor$, $y_0 = \lfloor y\rfloor$ and the
+    fractional parts $a = x - x_0$, $b = y - y_0$ ($0 \le a, b < 1$). The four surrounding pixels are</p>
+  <div class="theory-block">
+    $$ f_{00} = f(x_0, y_0),\quad f_{10} = f(x_0{+}1, y_0),\quad f_{01} = f(x_0, y_0{+}1),\quad f_{11} = f(x_0{+}1, y_0{+}1). $$
+  </div>
+  <p><strong>Step 1 - linear interpolation along $x$ on both rows.</strong> On the line through two points the
+    value changes linearly, so</p>
+  <div class="theory-block">
+    $$ f(x, y_0) = (1-a) f_{00} + a f_{10}, \qquad f(x, y_0{+}1) = (1-a) f_{01} + a f_{11}. $$
+  </div>
+  <p><strong>Step 2 - linear interpolation along $y$ between those two results:</strong></p>
+  <div class="theory-block">
+    $$ f(x, y) = (1-b)\, f(x, y_0) + b\, f(x, y_0{+}1)
+       = (1-a)(1-b) f_{00} + a(1-b) f_{10} + (1-a)b f_{01} + ab f_{11}. $$
+  </div>
+  <p>In matrix form:</p>
+  <div class="theory-block">
+    $$ f(x, y) = \begin{bmatrix} 1-b & b \end{bmatrix}
+       \begin{bmatrix} f_{00} & f_{10} \\ f_{01} & f_{11} \end{bmatrix}
+       \begin{bmatrix} 1-a \\ a \end{bmatrix}. $$
+  </div>
+  <p>Doing $y$ first and then $x$ gives the same result (the matrix product is associative), so the order doesn't
+    matter. The same formula comes out of a second route. Ask for the function of the form
+    $f = c_0 + c_1 a + c_2 b + c_3 ab$ (linear in each variable separately) that passes through the four
+    corners. Plugging in $(a,b) = (0,0), (1,0), (0,1), (1,1)$ gives</p>
+  <div class="theory-block">
+    $$ c_0 = f_{00},\quad c_1 = f_{10} - f_{00},\quad c_2 = f_{01} - f_{00},\quad c_3 = f_{11} - f_{10} - f_{01} + f_{00}, $$
+  </div>
+  <p>and expanding recovers the expression above.</p>
+  <p>Properties worth knowing:</p>
+  <ul>
+    <li>The four weights $(1-a)(1-b)$, $a(1-b)$, $(1-a)b$, $ab$ are the areas of the sub-rectangles
+      <em>opposite</em> each corner. They are non-negative and sum to 1, so the result is a weighted average and
+      never overshoots the neighbours.</li>
+    <li>It reproduces constant and linear (planar) intensity exactly, is continuous across pixel borders, and
+      its error is $O(h^2 f'')$.</li>
+    <li>Its derivative jumps at pixel borders (it is $C^0$, not $C^1$). That's why the tracker takes gradients
+      from a smoothed derivative filter and then interpolates those, rather than differentiating the
+      interpolant.</li>
+  </ul>
+  <p>The tracking page shows the formula evaluated at the tracked position of one feature. It is checked
+    against OpenCV's <code>getRectSubPix</code>, which uses the same interpolation.</p>
+</div>
+
+<div class="card" id="sfm">
+  <h2>5. Structure from motion with a planar object</h2>
+  <h3>Camera model</h3>
+  <p>A point $\mathbf X$ in camera-1 coordinates projects into view $i$ as</p>
+  <div class="theory-block">
+    $$ \lambda_i \tilde{\mathbf x}_i = K\,(R_i\mathbf X + \mathbf t_i), \qquad
+       K = \begin{bmatrix} f_x & 0 & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1 \end{bmatrix}, $$
+  </div>
+  <p>with $R_1 = I$, $\mathbf t_1 = \mathbf 0$ and $\lambda_i$ the depth. $K$ and the lens distortion come from
+    the HW2 calibration. We work in <em>normalised coordinates</em>
+    $\mathbf m_i = K^{-1}\tilde{\mathbf x}_i$ (after undistortion), so that
+    $\lambda_i\mathbf m_i = R_i\mathbf X + \mathbf t_i$.</p>
+
+  <h3>Why a homography</h3>
+  <p>With a general 3-D scene one would estimate the essential matrix from 8+ points. For a flat object that
+    estimate is degenerate: all points lie on one plane, and the plane admits a whole family of essential
+    matrices. The plane is also what makes the problem easy, though. Write it in camera-1 coordinates as
+    $\mathbf N^{\mathsf T}\mathbf X = d$, with $\mathbf N$ the unit normal and $d > 0$ the distance from
+    camera 1. For every point on the plane $\mathbf N^{\mathsf T}\mathbf X / d = 1$, so</p>
+  <div class="theory-block">
+    $$ \lambda_i\mathbf m_i = R_i\mathbf X + \mathbf t_i\,\frac{\mathbf N^{\mathsf T}\mathbf X}{d}
+       = \Big(R_i + \frac{1}{d}\mathbf t_i\mathbf N^{\mathsf T}\Big)\mathbf X
+       = \Big(R_i + \frac{1}{d}\mathbf t_i\mathbf N^{\mathsf T}\Big)\lambda_1\mathbf m_1 . $$
+  </div>
+  <p>So views 1 and $i$ are related by the <strong>plane-induced homography</strong></p>
+  <div class="theory-block">
+    $$ \mathbf m_i \sim H_i\,\mathbf m_1, \qquad H_i = R_i + \mathbf T_i\mathbf N^{\mathsf T},\quad \mathbf T_i = \mathbf t_i/d,
+       \qquad\text{(in pixels: } \tilde{\mathbf x}_i \sim K H_i K^{-1}\tilde{\mathbf x}_1). $$
+  </div>
+  <p>Only $\mathbf t_i/d$ appears: from images alone the scene is known up to one global scale. We set $d = 1$
+    and fix the scale at the end with one measured length.</p>
+
+  <h3>Step 1 - estimating $H_i$ (DLT)</h3>
+  <p>$\mathbf m_i \sim H\mathbf m_1$ means $\mathbf m_i \times H\mathbf m_1 = \mathbf 0$. Write
+    $\mathbf m_1 = (x, y, 1)$, $\mathbf m_i = (x', y', 1)$ and $\mathbf h$ = the 9 entries of $H$ row by row.
+    Two of the three rows are independent:</p>
+  <div class="theory-block">
+    $$ \begin{bmatrix} -x & -y & -1 & 0 & 0 & 0 & x'x & x'y & x' \\ 0 & 0 & 0 & -x & -y & -1 & y'x & y'y & y' \end{bmatrix}
+       \mathbf h = \mathbf 0 . $$
+  </div>
+  <p>Stack the rows for all $n \ge 4$ points into $A$ ($2n \times 9$). Minimise $\lVert A\mathbf h\rVert$ subject
+    to $\lVert\mathbf h\rVert = 1$; the solution is the right singular vector of $A$ with the smallest singular
+    value. Before this, the points are shifted to zero mean and scaled to mean distance $\sqrt2$ (Hartley
+    normalisation, $\hat{\mathbf m} = T\mathbf m$), which keeps $A$ well conditioned. Afterwards
+    $H = T_i^{-1}\hat H T_1$.</p>
+
+  <h3>Step 2 - decomposing $H = R + \mathbf T\mathbf N^{\mathsf T}$</h3>
+  <p>$H$ from the DLT has an unknown scale. The middle singular value of $R + \mathbf T\mathbf N^{\mathsf T}$
+    is always exactly 1, so divide by $\sigma_2(H)$. Choose the sign so that $(H\mathbf m_1)_z > 0$ (both depths
+    positive). Then (Ma, Soatto, Košecká &amp; Sastry, &sect;5.3) take the eigen-decomposition
+    $H^{\mathsf T}H = V\,\mathrm{diag}(\sigma_1^2, 1, \sigma_3^2)\,V^{\mathsf T}$, $V = [\mathbf v_1, \mathbf v_2, \mathbf v_3]$,
+    $\det V = 1$. $\mathbf v_2$ is the direction whose length $H$ preserves, and the two unit vectors</p>
+  <div class="theory-block">
+    $$ \mathbf u_{1,2} = \frac{\sqrt{1-\sigma_3^2}\,\mathbf v_1 \pm \sqrt{\sigma_1^2-1}\,\mathbf v_3}{\sqrt{\sigma_1^2-\sigma_3^2}} $$
+  </div>
+  <p>also keep their length. Since $H\mathbf a = R\mathbf a$ for every $\mathbf a \perp \mathbf N$, the plane
+    spanned by $\mathbf v_2$ and $\mathbf u_j$ can be the object plane. With
+    $U_j = [\mathbf v_2,\ \mathbf u_j,\ \mathbf v_2\times\mathbf u_j]$ and
+    $W_j = [H\mathbf v_2,\ H\mathbf u_j,\ H\mathbf v_2 \times H\mathbf u_j]$:</p>
+  <div class="theory-block">
+    $$ R_j = W_jU_j^{\mathsf T}, \qquad \mathbf N_j = \mathbf v_2 \times \mathbf u_j, \qquad \mathbf T_j = (H - R_j)\mathbf N_j , $$
+  </div>
+  <p>plus $(R_j, -\mathbf T_j, -\mathbf N_j)$. That makes four candidates per homography, and two tests leave
+    one:</p>
+  <ol>
+    <li><strong>Positive depth</strong> - every point must be in front of camera 1:
+      $\mathbf N^{\mathsf T}\mathbf X = d > 0$ with $\mathbf X = \lambda_1\mathbf m_1$, so
+      $\mathbf N^{\mathsf T}\mathbf m_1 > 0$ for all points. This removes two of the four.</li>
+    <li><strong>One plane, many views</strong> - $H_2, H_3, H_4$ all see the same plane, so their
+      $\mathbf N$ (in camera-1 coordinates) must agree. We choose the combination with the smallest total angle
+      between normals. This is where having four views pays off: with only two views the remaining ambiguity
+      can't be resolved from the geometry.</li>
+  </ol>
+
+  <h3>Step 3 - triangulation</h3>
+  <p>Now $P_i = [R_i \mid \mathbf T_i]$ is known for every view (in normalised coordinates). For a point,
+    $\lambda_i\mathbf m_i = P_i\tilde{\mathbf X}$. Taking the cross product with $\mathbf m_i$ removes
+    $\lambda_i$ and leaves two linear equations per view ($\mathbf p_i^{k\mathsf T}$ is row $k$ of $P_i$):</p>
+  <div class="theory-block">
+    $$ \begin{bmatrix} x_i\,\mathbf p_i^{3\mathsf T} - \mathbf p_i^{1\mathsf T} \\ y_i\,\mathbf p_i^{3\mathsf T} - \mathbf p_i^{2\mathsf T} \end{bmatrix}
+       \tilde{\mathbf X} = \mathbf 0 ,\qquad i = 1\ldots4 \;\Rightarrow\; A\tilde{\mathbf X} = \mathbf 0,\ A \in \mathbb R^{8\times4}. $$
+  </div>
+  <p>$\tilde{\mathbf X}$ is again the smallest right singular vector of $A$, then divided by its 4th coordinate.
+    Because the point is on the plane, there's also a one-view shortcut we use as a check:
+    $\mathbf X = \mathbf m_1 / (\mathbf N^{\mathsf T}\mathbf m_1)$ (with $d = 1$).</p>
+
+  <h3>Step 4 - bundle adjustment</h3>
+  <p>The linear steps minimise algebraic errors, not distances in the image. Finally all poses (view 1 fixed) and
+    all points are refined together by minimising the reprojection error in pixels (Levenberg-Marquardt style
+    least squares):</p>
+  <div class="theory-block">
+    $$ \min_{\{R_i,\mathbf T_i\},\{\mathbf X_j\}} \sum_{i=1}^{4}\sum_{j=1}^{n}
+       \big\lVert \tilde{\mathbf x}_{ij} - \pi\big(K(R_i\mathbf X_j + \mathbf T_i)\big) \big\rVert^2,
+       \qquad \pi(x, y, z) = (x/z,\ y/z). $$
+  </div>
+
+  <h3>Step 5 - scale, plane and boundary</h3>
+  <ul>
+    <li><strong>Scale:</strong> if the true distance between points $a$ and $b$ is $L$ cm, then
+      $s = L / \lVert\mathbf X_a - \mathbf X_b\rVert$ cm per unit. Every length is multiplied by $s$.</li>
+    <li><strong>Plane:</strong> fit a plane to the points by SVD (normal = singular vector of the centred points
+      with the smallest singular value). The RMS distance from it shows how flat the reconstruction came out.</li>
+    <li><strong>Object frame:</strong> origin at point $a$, $x$-axis along $a \to b$, $z$-axis the normal towards
+      the camera, $y = z \times x$. In this frame each point has coordinates $(u_j, v_j, \approx 0)$ -
+      that's the boundary in the object's own 2-D coordinates.</li>
+    <li><strong>Boundary:</strong> the points are clicked in order around the edge, so the boundary is the
+      polygon through them. Edge lengths are $\lVert(u,v)_{j+1} - (u,v)_j\rVert$, and the area comes from the
+      shoelace formula
+      $A = \tfrac12\left|\sum_j (u_j v_{j+1} - u_{j+1}v_j)\right|$.</li>
+    <li><strong>Camera positions:</strong> camera $i$'s centre satisfies $R_i\mathbf C_i + \mathbf T_i = \mathbf 0$,
+      so $\mathbf C_i = -R_i^{\mathsf T}\mathbf T_i$, then it is moved into the object frame and scaled.</li>
+  </ul>
+  <p>With the plane known, view 1 can also be re-rendered as seen straight from above. A point $(u, v)$ on the
+    object is at $\mathbf X = \mathbf X_a + \tfrac{u}{s}\mathbf e_1 + \tfrac{v}{s}\mathbf e_2$ in camera 1, so it
+    appears at pixel $K[\mathbf e_1/s \;\; \mathbf e_2/s \;\; \mathbf X_a](u, v, 1)^{\mathsf T}$ - another
+    homography, which is used to warp the photo.</p>
+</div>
+{% endblock %}

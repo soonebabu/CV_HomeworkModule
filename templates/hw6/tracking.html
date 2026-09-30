@@ -1,0 +1,163 @@
+{% extends "hw6/_layout.html" %}
+{% block head %}
+<script>
+  window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+<style>
+  .click-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .click-box { overflow: auto; max-height: 460px; border: 1px solid var(--border); border-radius: 8px; background: #0d1214; }
+  .click-box canvas { display: block; cursor: crosshair; }
+  table.result-table td.bad { color: #f2b8a3; }
+  @media (max-width: 800px) { .click-pair { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Part 2 - Tracking between two consecutive frames</h1>
+  <p>Given frames $I$ (time $t$) and $J$ (time $t+1$), the tracker finds each feature's displacement
+    $\mathbf d$ from $G\,\boldsymbol\delta = \mathbf b_k$, iterated and run coarse-to-fine
+    (<a href="{{ url_for('hw6.theory') }}#lk">derivation</a>), sampling $J$ between pixels with bilinear
+    interpolation (<a href="{{ url_for('hw6.theory') }}#bilinear">derivation</a>). The predicted location
+    $\mathbf u + \mathbf d$ is then compared with where the point <em>actually</em> is in frame $t+1$:</p>
+  <ul>
+    <li><strong>Template matching (NCC)</strong> - the 21 &times; 21 patch around the feature is searched for
+      exhaustively in frame $t+1$ (&plusmn;48 px), and the correlation peak is refined to sub-pixel precision
+      with a parabola. This uses no gradients and no linearisation, so it's an independent measurement.</li>
+    <li><strong>Your own clicks</strong> - optional. Click a point in frame $t$ and where it is in frame $t+1$
+      (after the first run).</li>
+    <li><strong>OpenCV's <code>calcOpticalFlowPyrLK</code></strong> - same method, different code. It checks
+      that the hand-written implementation is right.</li>
+  </ul>
+  <form method="POST" enctype="multipart/form-data">
+    {% if run_id and not result %}
+      <input type="hidden" name="run_id" value="{{ run_id }}">
+      <p class="note">Using the video from your optical-flow run. Upload a different one below to override.</p>
+    {% endif %}
+    <label>Video{% if run_id and not result %} (optional){% endif %}</label>
+    <input type="file" name="video" accept="video/*" {% if not run_id or result %}required{% endif %}>
+    <label>Short name for this video</label>
+    <input type="text" name="label" placeholder="e.g. Street traffic, static camera" maxlength="80">
+    <label>Time of the first frame (s)</label>
+    <input type="number" name="time" value="{{ t if t != '' else '1.0' }}" min="0" step="0.01">
+    <label>Number of features</label>
+    <input type="number" name="n_features" value="40" min="5" max="150">
+    <button type="submit">Track frame t &rarr; t+1</button>
+  </form>
+</div>
+
+{% if result %}
+{% set s = result.s %}
+<div class="card">
+  <h2>Result - frames {{ result.meta.frame }} and {{ result.meta.frame + 1 }} (t = {{ "%.3f"|format(result.meta.t) }} s) of {{ result.meta.label }}</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Median |predicted - actual|</div><div class="value">{{ "%.3f"|format(s.median_err) }} px</div></div>
+    <div class="stat-box"><div class="label">Within 0.5 px / 1 px</div><div class="value">{{ "%.0f"|format(s.pct_half) }}% / {{ "%.0f"|format(s.pct_one) }}%</div></div>
+    <div class="stat-box"><div class="label">Mean motion of features</div><div class="value">{{ "%.2f"|format(s.mean_motion) }} px</div></div>
+    <div class="stat-box"><div class="label">Our LK vs. OpenCV LK (median)</div><div class="value">{{ "%.4f"|format(s.median_err_cv) }} px</div></div>
+    <div class="stat-box"><div class="label">Brightness residual before &rarr; after</div><div class="value">{{ "%.1f"|format(s.res_before) }} &rarr; {{ "%.1f"|format(s.res_after) }}</div></div>
+  </div>
+  <p class="muted">{{ s.n_reliable }} of {{ s.n }} tracked features have a trustworthy template match (NCC &gt; 0.9)
+    and are used in the error statistics. The residual is the mean $|I(\mathbf x) - J(\mathbf x + \mathbf d)|$ in the
+    window (grey levels): it drops when the tracker has found the matching patch, which is brightness constancy
+    holding after the motion is compensated.</p>
+  <div class="img-grid">
+    <figure><a href="{{ result.urls.tracks1 }}" target="_blank"><img src="{{ result.urls.tracks1 }}"></a>
+      <figcaption>Frame t: features and their displacement (arrows drawn 4x longer)</figcaption></figure>
+    <figure><a href="{{ result.urls.tracks2 }}" target="_blank"><img src="{{ result.urls.tracks2 }}"></a>
+      <figcaption>Frame t+1: green circle = predicted $\mathbf u + \mathbf d$, red cross = actual (NCC)</figcaption></figure>
+    <figure><a href="{{ result.urls.diff }}" target="_blank"><img src="{{ result.urls.diff }}"></a>
+      <figcaption>$|J - I|$: the two frames only differ where something moved</figcaption></figure>
+  </div>
+  {% if result.urls.zoom %}
+  <figure class="wide-figure"><a href="{{ result.urls.zoom }}" target="_blank"><img src="{{ result.urls.zoom }}" style="max-width:640px;display:block;margin:0 auto;"></a>
+    <figcaption>Pixels magnified 10x for the four biggest movers. Blue = feature position in frame t (drawn in
+      both), green = predicted, red = actual. The distance between blue and green is the motion, the distance
+      between green and red is the error.</figcaption></figure>
+  {% endif %}
+  {% if result.urls.agree %}
+  <figure class="wide-figure"><a href="{{ result.urls.agree }}" target="_blank"><img src="{{ result.urls.agree }}"></a>
+    <figcaption>Predicted vs. actual displacement for every reliable feature. Points on the diagonal agree exactly.</figcaption></figure>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Check it yourself: click actual pixel locations</h2>
+  <p>Click a distinctive point in frame t (left), then the <em>same</em> point in frame t+1 (right). Repeat for a
+    few points (up to 10) and re-run. The table then lists the tracker's prediction next to your click. Zoom in -
+    frame-to-frame motion is usually only a few pixels.</p>
+  <label>Zoom</label>
+  <select id="zoomSel"><option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option><option value="4">4x</option></select>
+  <div class="click-pair">
+    <div><div class="muted">Frame t</div><div class="click-box"><canvas id="c1"></canvas></div></div>
+    <div><div class="muted">Frame t+1</div><div class="click-box"><canvas id="c2"></canvas></div></div>
+  </div>
+  <p class="muted" id="clickStatus">Click a point in frame t.</p>
+  <form method="POST">
+    <input type="hidden" name="run_id" value="{{ result.run_id }}">
+    <input type="hidden" name="reuse_frames" value="1">
+    <input type="hidden" name="meta" value="{{ meta_json }}">
+    <input type="hidden" name="manual_points" id="manualPoints" value="{{ result.manual_json }}">
+    <button type="button" class="secondary" id="undoBtn">Undo last</button>
+    <button type="button" class="secondary" id="clearBtn">Clear all</button>
+    <button type="submit">Re-run with my points</button>
+  </form>
+</div>
+
+{{ result.tables | safe }}
+
+<script>
+(function () {
+  const W = {{ result.img_w }}, H = {{ result.img_h }};
+  const imgs = [new Image(), new Image()];
+  imgs[0].src = "{{ result.urls.f1 }}";
+  imgs[1].src = "{{ result.urls.f2 }}";
+  const canvases = [document.getElementById('c1'), document.getElementById('c2')];
+  const field = document.getElementById('manualPoints');
+  const status = document.getElementById('clickStatus');
+  let pairs = JSON.parse(field.value || '[]');
+  let pending = null;
+  let zoom = 2;
+
+  function draw() {
+    canvases.forEach((c, k) => {
+      c.width = W * zoom; c.height = H * zoom;
+      const ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      if (imgs[k].complete) ctx.drawImage(imgs[k], 0, 0, c.width, c.height);
+      const mark = (x, y, color, label) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        const cx = (x + 0.5) * zoom, cy = (y + 0.5) * zoom;  // pixel centres, matching pos() below
+        ctx.beginPath(); ctx.arc(cx, cy, 6, 0, 2 * Math.PI); ctx.stroke();
+        ctx.fillStyle = color; ctx.font = '12px sans-serif'; ctx.fillText(label, cx + 8, cy - 8);
+      };
+      pairs.forEach((p, i) => mark(k === 0 ? p[0] : p[2], k === 0 ? p[1] : p[3], '#ffb400', 'M' + (i + 1)));
+      if (pending && k === 0) mark(pending[0], pending[1], '#00e0ff', 'M' + (pairs.length + 1));
+    });
+    field.value = JSON.stringify(pairs);
+    status.innerText = pending ? 'Now click the same point in frame t+1.'
+      : (pairs.length ? pairs.length + ' point pair(s) set. Click another point in frame t, or re-run.' : 'Click a point in frame t.');
+  }
+
+  function pos(c, e) {
+    const r = c.getBoundingClientRect();
+    return [(e.clientX - r.left) * (c.width / r.width) / zoom - 0.5, (e.clientY - r.top) * (c.height / r.height) / zoom - 0.5];
+  }
+
+  canvases[0].addEventListener('click', e => { if (pairs.length < 10) { pending = pos(canvases[0], e); draw(); } });
+  canvases[1].addEventListener('click', e => {
+    if (!pending) return;
+    const q = pos(canvases[1], e);
+    pairs.push([pending[0], pending[1], q[0], q[1]].map(v => Math.round(v * 100) / 100));
+    pending = null; draw();
+  });
+  document.getElementById('undoBtn').onclick = () => { if (pending) pending = null; else pairs.pop(); draw(); };
+  document.getElementById('clearBtn').onclick = () => { pairs = []; pending = null; draw(); };
+  document.getElementById('zoomSel').onchange = e => { zoom = parseInt(e.target.value); draw(); };
+  imgs.forEach(im => im.onload = draw);
+  draw();
+})();
+</script>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}
