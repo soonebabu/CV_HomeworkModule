@@ -1,0 +1,97 @@
+{
+  "hw": "hw6",
+  "page": "flow",
+  "title": "Optical flow - IMG_2117.MOV",
+  "images": [
+    {
+      "file": "00.mp4",
+      "caption": "Flow video: arrows on the frame (left), colour-coded flow (right)",
+      "wide": true,
+      "video": true
+    },
+    {
+      "file": "01.png",
+      "caption": "Motion statistics over the clip (dashed line = busiest frame)",
+      "wide": true,
+      "video": false
+    },
+    {
+      "file": "02.png",
+      "caption": "Busiest frame (t = 5.80 s) with flow vectors",
+      "wide": false,
+      "video": false
+    },
+    {
+      "file": "03.png",
+      "caption": "Same frame, colour-coded flow (hue = direction, brightness = speed)",
+      "wide": false,
+      "video": false
+    },
+    {
+      "file": "04.png",
+      "caption": "Pixels moving independently of the camera (red)",
+      "wide": false,
+      "video": false
+    },
+    {
+      "file": "05.png",
+      "caption": "Average flow magnitude per pixel over the clip",
+      "wide": false,
+      "video": false
+    },
+    {
+      "file": "06.png",
+      "caption": "Average object motion (camera motion removed)",
+      "wide": false,
+      "video": false
+    },
+    {
+      "file": "07.png",
+      "caption": "Direction histogram",
+      "wide": false,
+      "video": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Mean speed",
+      "value": "0.14 px/frame"
+    },
+    {
+      "label": "Peak speed",
+      "value": "0.44 px/frame"
+    },
+    {
+      "label": "Pixels moving (avg)",
+      "value": "2.8%"
+    },
+    {
+      "label": "Independent motion (avg)",
+      "value": "2.8%"
+    }
+  ],
+  "params": [
+    {
+      "label": "Video",
+      "value": "IMG_2117.MOV"
+    },
+    {
+      "label": "Clip",
+      "value": "0.0 s + 30.0 s"
+    },
+    {
+      "label": "Frame rate",
+      "value": "30.0 fps"
+    },
+    {
+      "label": "Processed at",
+      "value": "270 x 480 (from 1080 x 1920)"
+    }
+  ],
+  "table_html": "<ul><li>Strongest motion at t = 5.80 s: mean speed 0.44 px/frame (13 px/s), 11% of pixels above 1 px/frame.</li><li>49% of the frames contain motion (more than 2% of pixels moving); the other 51% are essentially still.</li><li>Dominant direction of motion on screen: up (~105 deg, 38% of all flow magnitude falls in that 10-degree bin).</li><li>The global (camera) translation is tiny - median 0.03 px/frame, above 0.3 px/frame in only 0% of frames - so the camera is basically still and the flow comes from objects moving in the scene (on average 2.8% of pixels move independently).</li><li>Divergence stays near zero (median -0.0001/frame), so there is no sustained zoom or forward/backward camera motion.</li></ul>",
+  "table_title": "What the flow tells us",
+  "math": false,
+  "note": null,
+  "caption": "",
+  "saved_at": "2026-10-05 15:00"
+}

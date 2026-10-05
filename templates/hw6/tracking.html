@@ -35,7 +35,7 @@
       <p class="note">Using the video from your optical-flow run. Upload a different one below to override.</p>
     {% endif %}
     <label>Video{% if run_id and not result %} (optional){% endif %}</label>
-    <input type="file" name="video" accept="video/*" {% if not run_id or result %}required{% endif %}>
+    <input type="file" name="video" accept="video/*,.mov,.MOV,.mp4,.MP4,.m4v,.M4V,.avi,.AVI,.mkv,.MKV,.webm,.WEBM,.3gp,.3GP" {% if not run_id or result %}required{% endif %}>
     <label>Short name for this video</label>
     <input type="text" name="label" placeholder="e.g. Street traffic, static camera" maxlength="80">
     <label>Time of the first frame (s)</label>
