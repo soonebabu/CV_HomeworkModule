@@ -23,9 +23,5 @@ static/hw6/uploads/*
 !static/hw6/uploads/.gitkeep
 static/hw6/outputs/*
 !static/hw6/outputs/.gitkeep
-static/challenge/uploads/*
-!static/challenge/uploads/.gitkeep
-static/challenge/outputs/*
-!static/challenge/outputs/.gitkeep
 static/samples/.pending/
 .DS_Store
