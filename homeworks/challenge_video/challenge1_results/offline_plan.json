@@ -1,0 +1,216 @@
+{
+  "title": "Mia, a girl with a red jacket...",
+  "entities": [
+    {
+      "id": "mia",
+      "name": "Mia",
+      "type": "character",
+      "kind": "girl",
+      "attributes": {
+        "clothing": "jacket",
+        "clothing_color": "red",
+        "hair_color": "black"
+      }
+    },
+    {
+      "id": "max",
+      "name": "Max",
+      "type": "character",
+      "kind": "dog",
+      "attributes": {
+        "color": "brown"
+      }
+    },
+    {
+      "id": "bench",
+      "name": "bench",
+      "type": "object",
+      "kind": "bench",
+      "attributes": {}
+    },
+    {
+      "id": "ball",
+      "name": "ball",
+      "type": "object",
+      "kind": "ball",
+      "attributes": {
+        "color": "yellow"
+      }
+    },
+    {
+      "id": "umbrella",
+      "name": "umbrella",
+      "type": "object",
+      "kind": "umbrella",
+      "attributes": {
+        "color": "blue"
+      }
+    },
+    {
+      "id": "table",
+      "name": "table",
+      "type": "object",
+      "kind": "table",
+      "attributes": {}
+    }
+  ],
+  "scenes": [
+    {
+      "index": 1,
+      "text": "Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park.",
+      "location": "park",
+      "weather": null,
+      "time_of_day": null,
+      "present": [
+        "mia",
+        "max"
+      ],
+      "actions": [
+        {
+          "actor": "mia",
+          "verb": "walk",
+          "target": null
+        }
+      ],
+      "relations": [],
+      "attribute_changes": [],
+      "exits": []
+    },
+    {
+      "index": 2,
+      "text": "She sits on a bench next to a yellow ball.",
+      "location": null,
+      "weather": null,
+      "time_of_day": null,
+      "present": [
+        "mia",
+        "bench",
+        "ball"
+      ],
+      "actions": [
+        {
+          "actor": "mia",
+          "verb": "sit",
+          "target": "bench"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "mia",
+          "relation": "on",
+          "object": "bench"
+        },
+        {
+          "subject": "mia",
+          "relation": "next_to",
+          "object": "ball"
+        }
+      ],
+      "attribute_changes": [],
+      "exits": []
+    },
+    {
+      "index": 3,
+      "text": "Max picks up the ball.",
+      "location": null,
+      "weather": null,
+      "time_of_day": null,
+      "present": [
+        "max",
+        "ball"
+      ],
+      "actions": [
+        {
+          "actor": "max",
+          "verb": "pick_up",
+          "target": "ball"
+        }
+      ],
+      "relations": [],
+      "attribute_changes": [],
+      "exits": []
+    },
+    {
+      "index": 4,
+      "text": "It starts to rain and Mia opens a blue umbrella.",
+      "location": null,
+      "weather": "rain",
+      "time_of_day": null,
+      "present": [
+        "mia",
+        "umbrella"
+      ],
+      "actions": [
+        {
+          "actor": "mia",
+          "verb": "open",
+          "target": "umbrella"
+        }
+      ],
+      "relations": [],
+      "attribute_changes": [],
+      "exits": []
+    },
+    {
+      "index": 5,
+      "text": "They go home to the kitchen.",
+      "location": "kitchen",
+      "weather": null,
+      "time_of_day": null,
+      "present": [
+        "mia",
+        "max"
+      ],
+      "actions": [
+        {
+          "actor": "max",
+          "verb": "go",
+          "target": null
+        }
+      ],
+      "relations": [],
+      "attribute_changes": [],
+      "exits": []
+    },
+    {
+      "index": 6,
+      "text": "Mia puts the ball on the table and Max sleeps under the table.",
+      "location": null,
+      "weather": null,
+      "time_of_day": null,
+      "present": [
+        "mia",
+        "ball",
+        "table",
+        "max"
+      ],
+      "actions": [
+        {
+          "actor": "mia",
+          "verb": "put",
+          "target": "ball"
+        },
+        {
+          "actor": "max",
+          "verb": "sleep",
+          "target": "table"
+        }
+      ],
+      "relations": [
+        {
+          "subject": "ball",
+          "relation": "on",
+          "object": "table"
+        },
+        {
+          "subject": "max",
+          "relation": "under",
+          "object": "table"
+        }
+      ],
+      "attribute_changes": [],
+      "exits": []
+    }
+  ],
+  "source": "rule-based planner"
+}

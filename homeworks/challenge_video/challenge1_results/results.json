@@ -1,0 +1,481 @@
+{
+  "plan": {
+    "title": "Mia, a girl with a red jacket...",
+    "entities": [
+      {
+        "id": "mia",
+        "name": "Mia",
+        "type": "character",
+        "kind": "girl",
+        "attributes": {
+          "clothing": "jacket",
+          "clothing_color": "red",
+          "hair_color": "black"
+        }
+      },
+      {
+        "id": "max",
+        "name": "Max",
+        "type": "character",
+        "kind": "dog",
+        "attributes": {
+          "color": "brown"
+        }
+      },
+      {
+        "id": "bench",
+        "name": "bench",
+        "type": "object",
+        "kind": "bench",
+        "attributes": {}
+      },
+      {
+        "id": "ball",
+        "name": "ball",
+        "type": "object",
+        "kind": "ball",
+        "attributes": {
+          "color": "yellow"
+        }
+      },
+      {
+        "id": "umbrella",
+        "name": "umbrella",
+        "type": "object",
+        "kind": "umbrella",
+        "attributes": {
+          "color": "blue"
+        }
+      },
+      {
+        "id": "table",
+        "name": "table",
+        "type": "object",
+        "kind": "table",
+        "attributes": {}
+      }
+    ],
+    "scenes": [
+      {
+        "index": 1,
+        "text": "Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park.",
+        "location": "park",
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "walk",
+            "target": null
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 2,
+        "text": "She sits on a bench next to a yellow ball.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "bench",
+          "ball"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "sit",
+            "target": "bench"
+          }
+        ],
+        "relations": [
+          {
+            "subject": "mia",
+            "relation": "on",
+            "object": "bench"
+          },
+          {
+            "subject": "mia",
+            "relation": "next_to",
+            "object": "ball"
+          }
+        ],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 3,
+        "text": "Max picks up the ball.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "max",
+          "ball"
+        ],
+        "actions": [
+          {
+            "actor": "max",
+            "verb": "pick_up",
+            "target": "ball"
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 4,
+        "text": "It starts to rain and Mia opens a blue umbrella.",
+        "location": null,
+        "weather": "rain",
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "umbrella"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "open",
+            "target": "umbrella"
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 5,
+        "text": "They go home to the kitchen.",
+        "location": "kitchen",
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "max",
+            "verb": "go",
+            "target": null
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 6,
+        "text": "Mia puts the ball on the table and Max sleeps under the table.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "ball",
+          "table",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "put",
+            "target": "ball"
+          },
+          {
+            "actor": "max",
+            "verb": "sleep",
+            "target": "table"
+          }
+        ],
+        "relations": [
+          {
+            "subject": "ball",
+            "relation": "on",
+            "object": "table"
+          },
+          {
+            "subject": "max",
+            "relation": "under",
+            "object": "table"
+          }
+        ],
+        "attribute_changes": [],
+        "exits": []
+      }
+    ],
+    "source": "rule-based planner"
+  },
+  "prompts": {
+    "baseline": [
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, She sits on a bench next to a yellow ball",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, Max picks up the ball",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, It starts to rain and Mia opens a blue umbrella",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, They go home to the kitchen",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, Mia puts the ball on the table and Max sleeps under the table",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+      }
+    ],
+    "orchestrated": [
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a park, Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park, a girl with black hair wearing a red jacket, a brown dog",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "park"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a park, She sits on a bench next to a yellow ball, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "park"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a park, Max picks up the ball, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball held by the dog",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "park"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a park, rainy weather, It starts to rain and Mia opens a blue umbrella, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball held by the dog, an open blue umbrella held by the girl",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "park"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a kitchen, They go home to the kitchen, a girl with black hair wearing a red jacket, a brown dog, a yellow ball held by the dog, an open blue umbrella held by the girl",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "kitchen"
+      },
+      {
+        "prompt": "high quality photo, cinematic lighting, detailed, in a kitchen, Mia puts the ball on the table and Max sleeps under the table, a girl with black hair wearing a red jacket, a brown dog, a yellow ball, an open blue umbrella held by the girl, a brown table",
+        "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+        "location": "kitchen"
+      }
+    ]
+  },
+  "scores": {
+    "baseline": {
+      "scores": {
+        "character": 0.19265792798250914,
+        "object": 0.4166666666666667,
+        "spatial": 0.13102930784225464,
+        "temporal": 0.37223000367482506,
+        "prompt": 0.6666666666666666,
+        "narrative": 0.5
+      },
+      "overall": 0.3798750954721537,
+      "identity": [
+        {
+          "character": "Mia",
+          "scene": 2,
+          "dino_cos": 0.22591616213321686
+        },
+        {
+          "character": "Mia",
+          "scene": 3,
+          "dino_cos": 0.2215130776166916
+        },
+        {
+          "character": "Mia",
+          "scene": 4,
+          "dino_cos": 0.29715627431869507
+        },
+        {
+          "character": "Max",
+          "scene": 6,
+          "dino_cos": 0.02604619786143303
+        }
+      ],
+      "vanished": [
+        "scene 3: bench",
+        "scene 4: ball",
+        "scene 5: umbrella"
+      ],
+      "clip_t": [
+        0.39415276050567627,
+        0.33862659335136414,
+        0.24398566782474518,
+        0.29651516675949097,
+        0.24634885787963867,
+        0.2810071110725403
+      ],
+      "location_seen": [
+        "park",
+        "park",
+        "park",
+        "street",
+        "kitchen",
+        "office"
+      ],
+      "warp_in": 6.388499816258748,
+      "warp_cut": 55.04871368408203
+    },
+    "orchestrated": {
+      "scores": {
+        "character": 0.4992647558450699,
+        "object": 0.4166666666666667,
+        "spatial": 0.7201452255249023,
+        "temporal": 0.43337870756785074,
+        "prompt": 0.8,
+        "narrative": 0.7
+      },
+      "overall": 0.5949092259340816,
+      "identity": [
+        {
+          "character": "Mia",
+          "scene": 2,
+          "dino_cos": 0.5727046728134155
+        },
+        {
+          "character": "Mia",
+          "scene": 3,
+          "dino_cos": 0.38758283853530884
+        },
+        {
+          "character": "Mia",
+          "scene": 4,
+          "dino_cos": 0.3381620943546295
+        },
+        {
+          "character": "Mia",
+          "scene": 5,
+          "dino_cos": 0.6032066345214844
+        },
+        {
+          "character": "Mia",
+          "scene": 6,
+          "dino_cos": 0.6072359085083008
+        },
+        {
+          "character": "Max",
+          "scene": 2,
+          "dino_cos": 0.358547568321228
+        },
+        {
+          "character": "Max",
+          "scene": 3,
+          "dino_cos": 0.4913153648376465
+        },
+        {
+          "character": "Max",
+          "scene": 4,
+          "dino_cos": 0.47266000509262085
+        },
+        {
+          "character": "Max",
+          "scene": 5,
+          "dino_cos": 0.6210895776748657
+        },
+        {
+          "character": "Max",
+          "scene": 6,
+          "dino_cos": 0.5401428937911987
+        }
+      ],
+      "vanished": [
+        "scene 4: ball"
+      ],
+      "clip_t": [
+        0.38356906175613403,
+        0.26874446868896484,
+        0.19527293741703033,
+        0.20521381497383118,
+        0.2229611724615097,
+        0.20964233577251434
+      ],
+      "location_seen": [
+        "park",
+        "park",
+        "park",
+        "park",
+        "park",
+        "park"
+      ],
+      "warp_in": 3.3310646216074624,
+      "warp_cut": 25.018835703531902
+    }
+  },
+  "model_free": {
+    "baseline": {
+      "scores": {
+        "temporal": 0.751494159274631,
+        "cut": 0.0,
+        "appearance": 0.3196560144356274,
+        "structure": 0.03
+      },
+      "warp_error": 6.212646018134223,
+      "cut_error": 53.13878345489502,
+      "drift_curve": [
+        1.0,
+        0.48496979201005763,
+        0.4287477228174978,
+        0.0,
+        0.38710847022535205,
+        0.2974540871252299
+      ],
+      "structure_per_cut": [
+        0.06666666666666667,
+        0.0,
+        0.08333333333333333,
+        0.0,
+        0.0
+      ],
+      "n_clips": 6,
+      "n_frames": 96
+    },
+    "orchestrated": {
+      "scores": {
+        "temporal": 0.8673269873725044,
+        "cut": 0.4082476615905761,
+        "appearance": 0.24697309193339353,
+        "structure": 0.08666666666666667
+      },
+      "warp_error": 3.3168253156873915,
+      "cut_error": 23.670093536376953,
+      "drift_curve": [
+        1.0,
+        0.3359653743970858,
+        0.1360677329509078,
+        0.13464118308961,
+        0.35414893402849806,
+        0.27404223520086607
+      ],
+      "structure_per_cut": [
+        0.0,
+        0.0,
+        0.16666666666666666,
+        0.0,
+        0.26666666666666666
+      ],
+      "n_clips": 6,
+      "n_frames": 96
+    }
+  },
+  "judge": {
+    "provider": null,
+    "arms": {},
+    "error": "No LLM key configured (set GEMINI_API_KEY or ANTHROPIC_API_KEY to enable the Video-LLM judge)."
+  }
+}

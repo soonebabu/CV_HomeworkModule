@@ -1,0 +1,37 @@
+{
+  "how_to_use": "Generate one clip per scene with any text-to-video model, once with the baseline prompts and once with the orchestrated prompts (+ negative prompts), then upload both sets on the 'Evaluate real clips' page in scene order.",
+  "baseline": [
+    "Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park.",
+    "She sits on a bench next to a yellow ball.",
+    "Max picks up the ball.",
+    "It starts to rain and Mia opens a blue umbrella.",
+    "They go home to the kitchen.",
+    "Mia puts the ball on the table and Max sleeps under the table."
+  ],
+  "orchestrated": [
+    {
+      "prompt": "Scene 1/6. Setting: park. Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park. Characters: Mia (girl; black hair, red jacket) at right; Max (dog; brown) at left. Objects: none. Establishing shot; this look is the reference for every later scene.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people"
+    },
+    {
+      "prompt": "Scene 2/6. Setting: park. She sits on a bench next to a yellow ball. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at right. Continue from the last frame of scene 1; keep every identity, outfit, colour and the layout of the park unchanged.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench, missing ball"
+    },
+    {
+      "prompt": "Scene 3/6. Setting: park. Max picks up the ball. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at held by Max. Continue from the last frame of scene 2; keep every identity, outfit, colour and the layout of the park unchanged.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench"
+    },
+    {
+      "prompt": "Scene 4/6. Setting: park, rain. It starts to rain and Mia opens a blue umbrella. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at held by Max; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 3; keep every identity, outfit, colour and the layout of the park unchanged.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench"
+    },
+    {
+      "prompt": "Scene 5/6. Setting: kitchen. They go home to the kitchen. Characters: Mia (girl; black hair, red jacket) at centre; Max (dog; brown) at left. Objects: ball (yellow) at held by Max; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 4; keep every identity, outfit, colour and the layout of the kitchen unchanged.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people"
+    },
+    {
+      "prompt": "Scene 6/6. Setting: kitchen. Mia puts the ball on the table and Max sleeps under the table. Characters: Mia (girl; black hair, red jacket) at centre; Max (dog; brown) at left. Objects: table (brown) at left; ball (yellow) at left; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 5; keep every identity, outfit, colour and the layout of the kitchen unchanged.",
+      "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing table, missing ball"
+    }
+  ]
+}

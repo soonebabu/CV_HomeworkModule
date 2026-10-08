@@ -1,0 +1,60 @@
+{
+  "baseline": [
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, She sits on a bench next to a yellow ball",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, Max picks up the ball",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, It starts to rain and Mia opens a blue umbrella",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, They go home to the kitchen",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, Mia puts the ball on the table and Max sleeps under the table",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark"
+    }
+  ],
+  "orchestrated": [
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a park, Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park, a girl with black hair wearing a red jacket, a brown dog",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "park"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a park, She sits on a bench next to a yellow ball, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "park"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a park, Max picks up the ball, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball held by the dog",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "park"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a park, rainy weather, It starts to rain and Mia opens a blue umbrella, a girl with black hair wearing a red jacket, a brown dog, a green bench, a yellow ball held by the dog, an open blue umbrella held by the girl",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "park"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a kitchen, They go home to the kitchen, a girl with black hair wearing a red jacket, a brown dog, a yellow ball held by the dog, an open blue umbrella held by the girl",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "kitchen"
+    },
+    {
+      "prompt": "high quality photo, cinematic lighting, detailed, in a kitchen, Mia puts the ball on the table and Max sleeps under the table, a girl with black hair wearing a red jacket, a brown dog, a yellow ball, an open blue umbrella held by the girl, a brown table",
+      "negative": "blurry, low quality, deformed, distorted face, extra limbs, text, watermark, different clothes, different hair color, extra people",
+      "location": "kitchen"
+    }
+  ]
+}

@@ -1,0 +1,2207 @@
+{
+  "plan": {
+    "title": "Mia, a girl with a red jacket...",
+    "entities": [
+      {
+        "id": "mia",
+        "name": "Mia",
+        "type": "character",
+        "kind": "girl",
+        "attributes": {
+          "clothing": "jacket",
+          "clothing_color": "red",
+          "hair_color": "black"
+        }
+      },
+      {
+        "id": "max",
+        "name": "Max",
+        "type": "character",
+        "kind": "dog",
+        "attributes": {
+          "color": "brown"
+        }
+      },
+      {
+        "id": "bench",
+        "name": "bench",
+        "type": "object",
+        "kind": "bench",
+        "attributes": {}
+      },
+      {
+        "id": "ball",
+        "name": "ball",
+        "type": "object",
+        "kind": "ball",
+        "attributes": {
+          "color": "yellow"
+        }
+      },
+      {
+        "id": "umbrella",
+        "name": "umbrella",
+        "type": "object",
+        "kind": "umbrella",
+        "attributes": {
+          "color": "blue"
+        }
+      },
+      {
+        "id": "table",
+        "name": "table",
+        "type": "object",
+        "kind": "table",
+        "attributes": {}
+      }
+    ],
+    "scenes": [
+      {
+        "index": 1,
+        "text": "Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park.",
+        "location": "park",
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "walk",
+            "target": null
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 2,
+        "text": "She sits on a bench next to a yellow ball.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "bench",
+          "ball"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "sit",
+            "target": "bench"
+          }
+        ],
+        "relations": [
+          {
+            "subject": "mia",
+            "relation": "on",
+            "object": "bench"
+          },
+          {
+            "subject": "mia",
+            "relation": "next_to",
+            "object": "ball"
+          }
+        ],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 3,
+        "text": "Max picks up the ball.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "max",
+          "ball"
+        ],
+        "actions": [
+          {
+            "actor": "max",
+            "verb": "pick_up",
+            "target": "ball"
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 4,
+        "text": "It starts to rain and Mia opens a blue umbrella.",
+        "location": null,
+        "weather": "rain",
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "umbrella"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "open",
+            "target": "umbrella"
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 5,
+        "text": "They go home to the kitchen.",
+        "location": "kitchen",
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "max",
+            "verb": "go",
+            "target": null
+          }
+        ],
+        "relations": [],
+        "attribute_changes": [],
+        "exits": []
+      },
+      {
+        "index": 6,
+        "text": "Mia puts the ball on the table and Max sleeps under the table.",
+        "location": null,
+        "weather": null,
+        "time_of_day": null,
+        "present": [
+          "mia",
+          "ball",
+          "table",
+          "max"
+        ],
+        "actions": [
+          {
+            "actor": "mia",
+            "verb": "put",
+            "target": "ball"
+          },
+          {
+            "actor": "max",
+            "verb": "sleep",
+            "target": "table"
+          }
+        ],
+        "relations": [
+          {
+            "subject": "ball",
+            "relation": "on",
+            "object": "table"
+          },
+          {
+            "subject": "max",
+            "relation": "under",
+            "object": "table"
+          }
+        ],
+        "attribute_changes": [],
+        "exits": []
+      }
+    ],
+    "source": "rule-based planner"
+  },
+  "snapshots": [
+    {
+      "index": 1,
+      "env": {
+        "location": "park",
+        "weather": "clear",
+        "time_of_day": "day",
+        "indoors": false
+      },
+      "visible": [
+        "mia",
+        "max"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        }
+      },
+      "relations": [],
+      "changes": [
+        "location: - -> park",
+        "Mia enters (park)",
+        "Max enters (park)"
+      ]
+    },
+    {
+      "index": 2,
+      "env": {
+        "location": "park",
+        "weather": "clear",
+        "time_of_day": "day",
+        "indoors": false
+      },
+      "visible": [
+        "mia",
+        "max",
+        "bench",
+        "ball"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "bench": {
+          "name": "bench",
+          "type": "object",
+          "kind": "bench",
+          "attributes": {
+            "color": "green",
+            "size": "medium"
+          },
+          "filled": [
+            "color",
+            "size"
+          ],
+          "held_by": null
+        },
+        "ball": {
+          "name": "ball",
+          "type": "object",
+          "kind": "ball",
+          "attributes": {
+            "color": "yellow",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        }
+      },
+      "relations": [
+        {
+          "subject": "mia",
+          "relation": "on",
+          "object": "bench"
+        },
+        {
+          "subject": "ball",
+          "relation": "next_to",
+          "object": "mia"
+        }
+      ],
+      "changes": [
+        "bench appears in park",
+        "ball appears in park",
+        "Mia on bench",
+        "ball next to Mia"
+      ]
+    },
+    {
+      "index": 3,
+      "env": {
+        "location": "park",
+        "weather": "clear",
+        "time_of_day": "day",
+        "indoors": false
+      },
+      "visible": [
+        "mia",
+        "max",
+        "bench",
+        "ball"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "bench": {
+          "name": "bench",
+          "type": "object",
+          "kind": "bench",
+          "attributes": {
+            "color": "green",
+            "size": "medium"
+          },
+          "filled": [
+            "color",
+            "size"
+          ],
+          "held_by": null
+        },
+        "ball": {
+          "name": "ball",
+          "type": "object",
+          "kind": "ball",
+          "attributes": {
+            "color": "yellow",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "max"
+        }
+      },
+      "relations": [
+        {
+          "subject": "mia",
+          "relation": "on",
+          "object": "bench"
+        },
+        {
+          "subject": "ball",
+          "relation": "held_by",
+          "object": "max"
+        }
+      ],
+      "changes": [
+        "ball held by Max"
+      ]
+    },
+    {
+      "index": 4,
+      "env": {
+        "location": "park",
+        "weather": "rain",
+        "time_of_day": "day",
+        "indoors": false
+      },
+      "visible": [
+        "mia",
+        "max",
+        "bench",
+        "ball",
+        "umbrella"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "bench": {
+          "name": "bench",
+          "type": "object",
+          "kind": "bench",
+          "attributes": {
+            "color": "green",
+            "size": "medium"
+          },
+          "filled": [
+            "color",
+            "size"
+          ],
+          "held_by": null
+        },
+        "ball": {
+          "name": "ball",
+          "type": "object",
+          "kind": "ball",
+          "attributes": {
+            "color": "yellow",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "max"
+        },
+        "umbrella": {
+          "name": "umbrella",
+          "type": "object",
+          "kind": "umbrella",
+          "attributes": {
+            "color": "blue",
+            "size": "medium",
+            "state": "open"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "mia"
+        }
+      },
+      "relations": [
+        {
+          "subject": "mia",
+          "relation": "on",
+          "object": "bench"
+        },
+        {
+          "subject": "ball",
+          "relation": "held_by",
+          "object": "max"
+        },
+        {
+          "subject": "umbrella",
+          "relation": "held_by",
+          "object": "mia"
+        }
+      ],
+      "changes": [
+        "weather: clear -> rain",
+        "umbrella appears in park",
+        "umbrella: open",
+        "umbrella held by Mia"
+      ]
+    },
+    {
+      "index": 5,
+      "env": {
+        "location": "kitchen",
+        "weather": "rain",
+        "time_of_day": "day",
+        "indoors": true
+      },
+      "visible": [
+        "mia",
+        "max",
+        "ball",
+        "umbrella"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "ball": {
+          "name": "ball",
+          "type": "object",
+          "kind": "ball",
+          "attributes": {
+            "color": "yellow",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "max"
+        },
+        "umbrella": {
+          "name": "umbrella",
+          "type": "object",
+          "kind": "umbrella",
+          "attributes": {
+            "color": "blue",
+            "size": "medium",
+            "state": "open"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "mia"
+        }
+      },
+      "relations": [
+        {
+          "subject": "ball",
+          "relation": "held_by",
+          "object": "max"
+        },
+        {
+          "subject": "umbrella",
+          "relation": "held_by",
+          "object": "mia"
+        }
+      ],
+      "changes": [
+        "location: park -> kitchen",
+        "Mia: park -> kitchen",
+        "Max: park -> kitchen"
+      ]
+    },
+    {
+      "index": 6,
+      "env": {
+        "location": "kitchen",
+        "weather": "rain",
+        "time_of_day": "day",
+        "indoors": true
+      },
+      "visible": [
+        "mia",
+        "max",
+        "ball",
+        "umbrella",
+        "table"
+      ],
+      "entities": {
+        "mia": {
+          "name": "Mia",
+          "type": "character",
+          "kind": "girl",
+          "attributes": {
+            "hair_color": "black",
+            "clothing": "jacket",
+            "clothing_color": "red",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "max": {
+          "name": "Max",
+          "type": "character",
+          "kind": "dog",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "ball": {
+          "name": "ball",
+          "type": "object",
+          "kind": "ball",
+          "attributes": {
+            "color": "yellow",
+            "size": "medium"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": null
+        },
+        "umbrella": {
+          "name": "umbrella",
+          "type": "object",
+          "kind": "umbrella",
+          "attributes": {
+            "color": "blue",
+            "size": "medium",
+            "state": "open"
+          },
+          "filled": [
+            "size"
+          ],
+          "held_by": "mia"
+        },
+        "table": {
+          "name": "table",
+          "type": "object",
+          "kind": "table",
+          "attributes": {
+            "color": "brown",
+            "size": "medium"
+          },
+          "filled": [
+            "color",
+            "size"
+          ],
+          "held_by": null
+        }
+      },
+      "relations": [
+        {
+          "subject": "max",
+          "relation": "under",
+          "object": "table"
+        },
+        {
+          "subject": "ball",
+          "relation": "on",
+          "object": "table"
+        },
+        {
+          "subject": "umbrella",
+          "relation": "held_by",
+          "object": "mia"
+        }
+      ],
+      "changes": [
+        "table appears in kitchen",
+        "Mia puts down ball",
+        "ball on table",
+        "Max under table"
+      ]
+    }
+  ],
+  "conditioning": {
+    "baseline": [
+      {
+        "arm": "baseline",
+        "scene": 1,
+        "prompt": "Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park.",
+        "negative_prompt": "",
+        "background": {
+          "location": "park",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 577874566
+        },
+        "entities": [
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.65,
+            "x1": 0.49,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": "walk",
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.35,
+            "x1": 0.35,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "baseline",
+        "scene": 2,
+        "prompt": "She sits on a bench next to a yellow ball.",
+        "negative_prompt": "",
+        "background": {
+          "location": "office",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 1011682591
+        },
+        "entities": [
+          {
+            "id": "bench",
+            "name": "bench",
+            "kind": "bench",
+            "type": "object",
+            "attributes": {
+              "color": "red",
+              "size": "medium"
+            },
+            "x0": 0.2,
+            "x1": 0.2,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.17,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "shirt",
+              "clothing_color": "purple",
+              "size": "medium"
+            },
+            "x0": 0.673125,
+            "x1": 0.673125,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": 0.75,
+            "x1": 0.75,
+            "y_base": 0.9,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 4,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "baseline",
+        "scene": 3,
+        "prompt": "Max picks up the ball.",
+        "negative_prompt": "",
+        "background": {
+          "location": "beach",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 501659546
+        },
+        "entities": [
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.5,
+            "x1": 0.5,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "red",
+              "size": "medium"
+            },
+            "x0": 0.5,
+            "x1": 0.5,
+            "y_base": null,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "held",
+            "motion": null,
+            "held_by": "max",
+            "z": 5,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "baseline",
+        "scene": 4,
+        "prompt": "It starts to rain and Mia opens a blue umbrella.",
+        "negative_prompt": "",
+        "background": {
+          "location": "room",
+          "weather": "rain",
+          "time_of_day": "day",
+          "seed": 797718209
+        },
+        "entities": [
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "gray",
+              "clothing": "dress",
+              "clothing_color": "pink",
+              "size": "medium"
+            },
+            "x0": 0.25,
+            "x1": 0.25,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "umbrella",
+            "name": "umbrella",
+            "kind": "umbrella",
+            "type": "object",
+            "attributes": {
+              "color": "blue",
+              "size": "medium",
+              "state": "open"
+            },
+            "x0": 0.85,
+            "x1": 0.85,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.3,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 4,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "baseline",
+        "scene": 5,
+        "prompt": "They go home to the kitchen.",
+        "negative_prompt": "",
+        "background": {
+          "location": "kitchen",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 308374032
+        },
+        "entities": [
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "brown",
+              "clothing": "shirt",
+              "clothing_color": "teal",
+              "size": "medium"
+            },
+            "x0": 0.5,
+            "x1": 0.5,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "white",
+              "size": "medium"
+            },
+            "x0": 0.85,
+            "x1": 0.85,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "baseline",
+        "scene": 6,
+        "prompt": "Mia puts the ball on the table and Max sleeps under the table.",
+        "negative_prompt": "",
+        "background": {
+          "location": "office",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 609340121
+        },
+        "entities": [
+          {
+            "id": "table",
+            "name": "table",
+            "kind": "table",
+            "type": "object",
+            "attributes": {
+              "color": "white",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.21,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "brown",
+              "clothing": "sweater",
+              "clothing_color": "orange",
+              "size": "medium"
+            },
+            "x0": 0.4,
+            "x1": 0.4,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "white",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.13999999999999999,
+            "pose": "sleep",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "red",
+              "size": "medium"
+            },
+            "x0": 0.7919999999999999,
+            "x1": 0.7919999999999999,
+            "y_base": 0.6900000000000001,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 4,
+            "on": "table",
+            "rel": true
+          }
+        ],
+        "continue_from_previous": false
+      }
+    ],
+    "orchestrated": [
+      {
+        "arm": "orchestrated",
+        "scene": 1,
+        "prompt": "Scene 1/6. Setting: park. Mia, a girl with a red jacket and black hair, walks her brown dog Max in the park. Characters: Mia (girl; black hair, red jacket) at right; Max (dog; brown) at left. Objects: none. Establishing shot; this look is the reference for every later scene.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people",
+        "background": {
+          "location": "park",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 3288825139
+        },
+        "entities": [
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.5,
+            "x1": 0.66,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": "walk",
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "orchestrated",
+        "scene": 2,
+        "prompt": "Scene 2/6. Setting: park. She sits on a bench next to a yellow ball. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at right. Continue from the last frame of scene 1; keep every identity, outfit, colour and the layout of the park unchanged.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench, missing ball",
+        "background": {
+          "location": "park",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 3288825139
+        },
+        "entities": [
+          {
+            "id": "bench",
+            "name": "bench",
+            "kind": "bench",
+            "type": "object",
+            "attributes": {
+              "color": "green",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.17,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.8150000000000001,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "sit",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": "bench",
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": 0.7893749999999999,
+            "x1": 0.7893749999999999,
+            "y_base": 0.9,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 4,
+            "on": null,
+            "rel": true
+          }
+        ],
+        "continue_from_previous": true
+      },
+      {
+        "arm": "orchestrated",
+        "scene": 3,
+        "prompt": "Scene 3/6. Setting: park. Max picks up the ball. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at held by Max. Continue from the last frame of scene 2; keep every identity, outfit, colour and the layout of the park unchanged.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench",
+        "background": {
+          "location": "park",
+          "weather": "clear",
+          "time_of_day": "day",
+          "seed": 3288825139
+        },
+        "entities": [
+          {
+            "id": "bench",
+            "name": "bench",
+            "kind": "bench",
+            "type": "object",
+            "attributes": {
+              "color": "green",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.17,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.8150000000000001,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "sit",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": "bench",
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": null,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "held",
+            "motion": null,
+            "held_by": "max",
+            "z": 5,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": true
+      },
+      {
+        "arm": "orchestrated",
+        "scene": 4,
+        "prompt": "Scene 4/6. Setting: park, rain. It starts to rain and Mia opens a blue umbrella. Characters: Max (dog; brown) at left; Mia (girl; black hair, red jacket) at right. Objects: bench (green) at right; ball (yellow) at held by Max; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 3; keep every identity, outfit, colour and the layout of the park unchanged.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing bench",
+        "background": {
+          "location": "park",
+          "weather": "rain",
+          "time_of_day": "day",
+          "seed": 3288825139
+        },
+        "entities": [
+          {
+            "id": "bench",
+            "name": "bench",
+            "kind": "bench",
+            "type": "object",
+            "attributes": {
+              "color": "green",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.17,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": 0.8150000000000001,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "sit",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": "bench",
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": 0.1,
+            "x1": 0.1,
+            "y_base": null,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "held",
+            "motion": null,
+            "held_by": "max",
+            "z": 5,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "umbrella",
+            "name": "umbrella",
+            "kind": "umbrella",
+            "type": "object",
+            "attributes": {
+              "color": "blue",
+              "size": "medium",
+              "state": "open"
+            },
+            "x0": 0.86625,
+            "x1": 0.86625,
+            "y_base": null,
+            "w": 0.16875,
+            "h": 0.3,
+            "pose": "held",
+            "motion": null,
+            "held_by": "mia",
+            "z": 5,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": true
+      },
+      {
+        "arm": "orchestrated",
+        "scene": 5,
+        "prompt": "Scene 5/6. Setting: kitchen. They go home to the kitchen. Characters: Mia (girl; black hair, red jacket) at centre; Max (dog; brown) at left. Objects: ball (yellow) at held by Max; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 4; keep every identity, outfit, colour and the layout of the kitchen unchanged.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people",
+        "background": {
+          "location": "kitchen",
+          "weather": "rain",
+          "time_of_day": "day",
+          "seed": 3936603700
+        },
+        "entities": [
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 1.08,
+            "x1": 0.5,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": "walk",
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": -0.08,
+            "x1": 0.1,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.2,
+            "pose": "stand",
+            "motion": "walk",
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": -0.08,
+            "x1": 0.1,
+            "y_base": null,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "held",
+            "motion": "walk",
+            "held_by": "max",
+            "z": 5,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "umbrella",
+            "name": "umbrella",
+            "kind": "umbrella",
+            "type": "object",
+            "attributes": {
+              "color": "blue",
+              "size": "medium",
+              "state": "open"
+            },
+            "x0": 1.08,
+            "x1": 0.5,
+            "y_base": null,
+            "w": 0.16875,
+            "h": 0.3,
+            "pose": "held",
+            "motion": "walk",
+            "held_by": "mia",
+            "z": 5,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": false
+      },
+      {
+        "arm": "orchestrated",
+        "scene": 6,
+        "prompt": "Scene 6/6. Setting: kitchen. Mia puts the ball on the table and Max sleeps under the table. Characters: Mia (girl; black hair, red jacket) at centre; Max (dog; brown) at left. Objects: table (brown) at left; ball (yellow) at left; umbrella (blue, open) at held by Mia. Continue from the last frame of scene 5; keep every identity, outfit, colour and the layout of the kitchen unchanged.",
+        "negative_prompt": "different outfit, changed hair colour, different face, extra people, missing table, missing ball",
+        "background": {
+          "location": "kitchen",
+          "weather": "rain",
+          "time_of_day": "day",
+          "seed": 3936603700
+        },
+        "entities": [
+          {
+            "id": "table",
+            "name": "table",
+            "kind": "table",
+            "type": "object",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.13375,
+            "x1": 0.13375,
+            "y_base": 0.9,
+            "w": 0.24750000000000003,
+            "h": 0.21,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 1,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "mia",
+            "name": "Mia",
+            "kind": "girl",
+            "type": "character",
+            "attributes": {
+              "hair_color": "black",
+              "clothing": "jacket",
+              "clothing_color": "red",
+              "size": "medium"
+            },
+            "x0": 0.5,
+            "x1": 0.5,
+            "y_base": 0.9,
+            "w": 0.084375,
+            "h": 0.4,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": false
+          },
+          {
+            "id": "max",
+            "name": "Max",
+            "kind": "dog",
+            "type": "character",
+            "attributes": {
+              "color": "brown",
+              "size": "medium"
+            },
+            "x0": 0.13375,
+            "x1": 0.13375,
+            "y_base": 0.9,
+            "w": 0.16875,
+            "h": 0.13999999999999999,
+            "pose": "sleep",
+            "motion": null,
+            "held_by": null,
+            "z": 2,
+            "on": null,
+            "rel": true
+          },
+          {
+            "id": "ball",
+            "name": "ball",
+            "kind": "ball",
+            "type": "object",
+            "attributes": {
+              "color": "yellow",
+              "size": "medium"
+            },
+            "x0": 0.0595,
+            "x1": 0.0595,
+            "y_base": 0.6900000000000001,
+            "w": 0.03937500000000001,
+            "h": 0.07,
+            "pose": "stand",
+            "motion": null,
+            "held_by": null,
+            "z": 4,
+            "on": "table",
+            "rel": true
+          },
+          {
+            "id": "umbrella",
+            "name": "umbrella",
+            "kind": "umbrella",
+            "type": "object",
+            "attributes": {
+              "color": "blue",
+              "size": "medium",
+              "state": "open"
+            },
+            "x0": 0.5,
+            "x1": 0.5,
+            "y_base": null,
+            "w": 0.16875,
+            "h": 0.3,
+            "pose": "held",
+            "motion": null,
+            "held_by": "mia",
+            "z": 5,
+            "on": null,
+            "rel": false
+          }
+        ],
+        "continue_from_previous": true
+      }
+    ]
+  },
+  "evaluation": {
+    "baseline": {
+      "scores": {
+        "character": 0.2588776613986062,
+        "object": 0.25,
+        "spatial": 0.24720077866293494,
+        "temporal": 0.4996056230740396,
+        "prompt": 0.9545454545454546,
+        "narrative": 0.45614035087719296
+      },
+      "overall": 0.444394978093038,
+      "details": {
+        "character_rows": [
+          {
+            "scene": 2,
+            "vs_scene": 1,
+            "sim": 0.3276511300873738,
+            "delta_e": 32.92983627319336,
+            "name": "Mia"
+          },
+          {
+            "scene": 4,
+            "vs_scene": 1,
+            "sim": 0.0937955462214608,
+            "delta_e": 33.18504333496094,
+            "name": "Mia"
+          },
+          {
+            "scene": 5,
+            "vs_scene": 1,
+            "sim": 0.22733323127185678,
+            "delta_e": 38.19553756713867,
+            "name": "Mia"
+          },
+          {
+            "scene": 6,
+            "vs_scene": 1,
+            "sim": 0.2434640507622673,
+            "delta_e": 24.774829864501953,
+            "name": "Mia"
+          },
+          {
+            "scene": 3,
+            "vs_scene": 1,
+            "sim": 0.905630857592721,
+            "delta_e": 0.26634708046913147,
+            "name": "Max"
+          },
+          {
+            "scene": 5,
+            "vs_scene": 1,
+            "sim": 0.012391764753480472,
+            "delta_e": 60.79486846923828,
+            "name": "Max"
+          },
+          {
+            "scene": 6,
+            "vs_scene": 1,
+            "sim": 0.0018770491010829948,
+            "delta_e": 63.776817321777344,
+            "name": "Max"
+          }
+        ],
+        "object_presence": 0.5,
+        "objects_expected": 12,
+        "objects_shown": 6,
+        "object_identity": 0.0,
+        "vanish_events": [
+          "scene 3: bench vanished",
+          "scene 4: ball vanished",
+          "scene 5: umbrella vanished"
+        ],
+        "cut_jumps": [
+          {
+            "scene": 2,
+            "entity": "Mia",
+            "jump": 0.18272796151117876
+          },
+          {
+            "scene": 3,
+            "entity": "ball",
+            "jump": 0.34118360159890454
+          },
+          {
+            "scene": 6,
+            "entity": "Mia",
+            "jump": 0.09877698447222101
+          },
+          {
+            "scene": 6,
+            "entity": "Max",
+            "jump": 0.04803355585182718
+          }
+        ],
+        "entity_continuity": 0.3380768727059663,
+        "background_stability": 0.15632468461990356,
+        "warp_error_in_clip": 0.019718846298019344,
+        "warp_error_at_cuts": 47.15244674682617,
+        "per_scene": [
+          {
+            "scene": 1,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 5,
+            "state_total": 5,
+            "location_seen": "park",
+            "notes": []
+          },
+          {
+            "scene": 2,
+            "prompt_ok": 4,
+            "prompt_total": 5,
+            "state_ok": 5,
+            "state_total": 10,
+            "location_seen": "office",
+            "notes": [
+              "looks like office, should be park",
+              "Mia not red",
+              "missing Max",
+              "bench not green",
+              "broken: Mia on bench"
+            ]
+          },
+          {
+            "scene": 3,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 4,
+            "state_total": 9,
+            "location_seen": "beach",
+            "notes": [
+              "looks like beach, should be park",
+              "missing Mia",
+              "missing bench",
+              "ball not yellow",
+              "broken: Mia on bench"
+            ]
+          },
+          {
+            "scene": 4,
+            "prompt_ok": 2,
+            "prompt_total": 2,
+            "state_ok": 3,
+            "state_total": 11,
+            "location_seen": "room",
+            "notes": [
+              "looks like room, should be park",
+              "Mia not red",
+              "missing Max",
+              "missing bench",
+              "missing ball",
+              "broken: Mia on bench",
+              "broken: ball held by Max",
+              "broken: umbrella held by Mia"
+            ]
+          },
+          {
+            "scene": 5,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 3,
+            "state_total": 9,
+            "location_seen": "kitchen",
+            "notes": [
+              "Mia not red",
+              "Max not brown",
+              "missing ball",
+              "missing umbrella",
+              "broken: ball held by Max",
+              "broken: umbrella held by Mia"
+            ]
+          },
+          {
+            "scene": 6,
+            "prompt_ok": 6,
+            "prompt_total": 6,
+            "state_ok": 6,
+            "state_total": 13,
+            "location_seen": "office",
+            "notes": [
+              "looks like office, should be kitchen",
+              "Mia not red",
+              "Max not brown",
+              "ball not yellow",
+              "missing umbrella",
+              "table not brown",
+              "broken: umbrella held by Mia"
+            ]
+          }
+        ]
+      }
+    },
+    "orchestrated": {
+      "scores": {
+        "character": 0.8785644456319994,
+        "object": 0.9633373293176574,
+        "spatial": 0.8904448672741054,
+        "temporal": 0.9613419239512344,
+        "prompt": 1.0,
+        "narrative": 1.0
+      },
+      "overall": 0.9489480943624994,
+      "details": {
+        "character_rows": [
+          {
+            "scene": 2,
+            "vs_scene": 1,
+            "sim": 0.8921605824407338,
+            "delta_e": 3.5938236713409424,
+            "name": "Mia"
+          },
+          {
+            "scene": 3,
+            "vs_scene": 1,
+            "sim": 0.8921605824407338,
+            "delta_e": 3.5938236713409424,
+            "name": "Mia"
+          },
+          {
+            "scene": 4,
+            "vs_scene": 1,
+            "sim": 0.8650134751223126,
+            "delta_e": 6.98261022567749,
+            "name": "Mia"
+          },
+          {
+            "scene": 5,
+            "vs_scene": 1,
+            "sim": 0.8393783067072549,
+            "delta_e": 3.297105550765991,
+            "name": "Mia"
+          },
+          {
+            "scene": 6,
+            "vs_scene": 1,
+            "sim": 0.8382475447599902,
+            "delta_e": 3.798039436340332,
+            "name": "Mia"
+          },
+          {
+            "scene": 2,
+            "vs_scene": 1,
+            "sim": 1.0,
+            "delta_e": 0.0,
+            "name": "Max"
+          },
+          {
+            "scene": 3,
+            "vs_scene": 1,
+            "sim": 0.9302396697781193,
+            "delta_e": 0.2804182767868042,
+            "name": "Max"
+          },
+          {
+            "scene": 4,
+            "vs_scene": 1,
+            "sim": 0.868843768438768,
+            "delta_e": 0.7142153978347778,
+            "name": "Max"
+          },
+          {
+            "scene": 5,
+            "vs_scene": 1,
+            "sim": 0.880612550938988,
+            "delta_e": 0.2971230149269104,
+            "name": "Max"
+          },
+          {
+            "scene": 6,
+            "vs_scene": 1,
+            "sim": 0.778987975693094,
+            "delta_e": 2.359259843826294,
+            "name": "Max"
+          }
+        ],
+        "object_presence": 1.0,
+        "objects_expected": 12,
+        "objects_shown": 12,
+        "object_identity": 0.9266746586353147,
+        "vanish_events": [],
+        "cut_jumps": [
+          {
+            "scene": 2,
+            "entity": "Mia",
+            "jump": 0.2023138911308159
+          },
+          {
+            "scene": 2,
+            "entity": "Max",
+            "jump": 0.0
+          },
+          {
+            "scene": 3,
+            "entity": "Mia",
+            "jump": 0.0
+          },
+          {
+            "scene": 3,
+            "entity": "Max",
+            "jump": 0.003296743772349586
+          },
+          {
+            "scene": 3,
+            "entity": "bench",
+            "jump": 0.0010779370812697218
+          },
+          {
+            "scene": 3,
+            "entity": "ball",
+            "jump": 0.6041558907084973
+          },
+          {
+            "scene": 4,
+            "entity": "Mia",
+            "jump": 0.009253935757782963
+          },
+          {
+            "scene": 4,
+            "entity": "Max",
+            "jump": 0.0
+          },
+          {
+            "scene": 4,
+            "entity": "bench",
+            "jump": 0.0
+          },
+          {
+            "scene": 4,
+            "entity": "ball",
+            "jump": 0.0
+          },
+          {
+            "scene": 6,
+            "entity": "Mia",
+            "jump": 0.0
+          },
+          {
+            "scene": 6,
+            "entity": "Max",
+            "jump": 0.05048290567327889
+          },
+          {
+            "scene": 6,
+            "entity": "ball",
+            "jump": 0.14448784070333084
+          },
+          {
+            "scene": 6,
+            "entity": "umbrella",
+            "jump": 0.0
+          }
+        ],
+        "entity_continuity": 0.7826430846471386,
+        "background_stability": 0.9982466499010721,
+        "warp_error_in_clip": 0.23059670730799553,
+        "warp_error_at_cuts": 1.7023070951302846,
+        "per_scene": [
+          {
+            "scene": 1,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 5,
+            "state_total": 5,
+            "location_seen": "park",
+            "notes": []
+          },
+          {
+            "scene": 2,
+            "prompt_ok": 5,
+            "prompt_total": 5,
+            "state_ok": 11,
+            "state_total": 11,
+            "location_seen": "park",
+            "notes": []
+          },
+          {
+            "scene": 3,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 11,
+            "state_total": 11,
+            "location_seen": "park",
+            "notes": []
+          },
+          {
+            "scene": 4,
+            "prompt_ok": 2,
+            "prompt_total": 2,
+            "state_ok": 14,
+            "state_total": 14,
+            "location_seen": "park",
+            "notes": []
+          },
+          {
+            "scene": 5,
+            "prompt_ok": 3,
+            "prompt_total": 3,
+            "state_ok": 11,
+            "state_total": 11,
+            "location_seen": "kitchen",
+            "notes": []
+          },
+          {
+            "scene": 6,
+            "prompt_ok": 6,
+            "prompt_total": 6,
+            "state_ok": 14,
+            "state_total": 14,
+            "location_seen": "kitchen",
+            "notes": []
+          }
+        ]
+      }
+    }
+  },
+  "judge": null,
+  "prompt_effort": {
+    "story_words": 62,
+    "orchestrated_words": 58,
+    "baseline_words": 10
+  }
+}
