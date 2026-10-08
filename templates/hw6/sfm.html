@@ -76,7 +76,7 @@
     </div>
   </div>
 
-  <form method="POST" id="sfmForm">
+  <form method="POST" id="sfmForm" action="{{ url_for('hw6.sfm_view') }}">
     <input type="hidden" name="stage" value="compute">
     <input type="hidden" name="run_id" value="{{ run_id }}">
     <input type="hidden" name="points" id="pointsField">

@@ -9,12 +9,14 @@ def create_app():
     from homeworks.hw3_blurring.routes import bp as hw3_bp
     from homeworks.hw4_segmentation.routes import bp as hw4_bp
     from homeworks.hw6_motion.routes import bp as hw6_bp
+    from homeworks.challenge_video.routes import bp as challenge_bp
     from homeworks.samples import bp as samples_bp
 
     app.register_blueprint(hw2_bp, url_prefix="/hw2")
     app.register_blueprint(hw3_bp, url_prefix="/hw3")
     app.register_blueprint(hw4_bp, url_prefix="/hw4")
     app.register_blueprint(hw6_bp, url_prefix="/hw6")
+    app.register_blueprint(challenge_bp, url_prefix="/challenge")
     app.register_blueprint(samples_bp, url_prefix="/samples")
 
     @app.route("/")

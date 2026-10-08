@@ -3,12 +3,10 @@
 Hosted on : https://cv-homeworkmodule-1.onrender.com/
 
 This is one small Flask app that holds all my homework for the course. Every homework has its own page in
-the app: you upload your own photo or video, the code runs on it, and you see the result straight away along
-with the numbers behind it. If you'd rather not upload anything, each homework also has a **Sample outputs**
+the app: each homework also has a **Sample outputs**
 page with real runs I saved earlier.
 
-The sections below go through each module: what it does, how to use it in the app, and what you should see
-when it works.
+
 
 
 ## Structure
@@ -22,6 +20,7 @@ homeworks/
     
   hw4_segmentation/               # Homework 4 - classical human boundary segmentation vs. SAM2
   hw6_motion/                     # Homework 6 - optical flow, Lucas-Kanade tracking, structure from motion
+  challenge_video/                # Challenge 1 - Scene-Graph Orchestrator for consistent long-form video
 templates/                       # HTML pages, one folder per homework
 static/                          # uploads, generated outputs and saved samples
 calibration_images/              # chessboard photos used for HW2
@@ -297,6 +296,74 @@ The default camera settings come from the HW2 calibration photos in `calibration
 SM-G998U, 10 x 7 inner corners): fx = 2767, fy = 2775, cx = 1478, cy = 2051 at 3000 x 4000. If you've run a
 calibration on the HW2 page, that one is used instead.
 -->
+
+
+## Challenge 1 - Consistent Long-Form Generative Video
+
+A quick prototype and feasibility test of my proposed **Scene-Graph Orchestrator** (challenge from Dr. Mohit
+Bansal's talk): separate high-level narrative planning from low-level video generation, so characters, objects
+and places stay the same across a long multi-scene video.
+
+**Files:** `planner.py`, `state_graph.py`, `control_adapter.py`, `generator.py`, `metrics.py`, `judge.py`,
+`real_eval.py`, `llm.py`, `pipeline.py`, `routes.py`
+
+The four stages follow the slides:
+
+1. **User prompt** - a short story, one sentence per scene (up to 8).
+2. **LLM narrative planner** (`planner.py`) - story to JSON: entities (characters/objects with appearance) and
+   scenes (place, weather, time, actions, spatial relations, attribute changes). Uses Gemini or Claude when a key
+   is set, otherwise a rule-based planner that writes the same JSON.
+3. **Persistent world / state graph** (`state_graph.py`) - locks each character's look (anything the story
+   doesn't say is chosen once and kept), tracks where every object is and who holds it, plus location,
+   weather, time and relations. It advances one scene at a time and logs what changed.
+4. **Control adapter + generator** (`control_adapter.py`, `generator.py`) - turns the state into conditioning: an
+   enriched prompt, a negative prompt, a layout of boxes that persists per location, fixed seeds, and
+   continuity from the previous clip. There's no GPU here, so the generator is an offline stand-in renderer that
+   draws what the conditioning says and makes up whatever it leaves open, the way a text-to-video model does.
+
+The same story also goes through a **baseline** that prompts each scene with its own sentence only. Both arms
+use the same generator, so the difference comes only from the conditioning.
+
+### Prototype run (`/challenge/prototype`)
+
+Pick a preset or write a story and run. About 10 s on CPU. **What you should see:** the side-by-side video
+(baseline left, orchestrator right), a storyboard, the plan, the state graph after every scene, the layout
+the adapter produced, both prompt sets, and the evaluation on six axes (character, object, spatial and temporal
+consistency, prompt adherence, narrative flow; see the **Method & metrics** tab). On the presets the
+orchestrator scores about 0.93-0.97 overall and the baseline about 0.44-0.54. Prompt adherence comes out about
+the same for both, since the baseline does follow each sentence. The gap is in everything that has to carry over
+from earlier scenes.
+
+### Evaluate real clips (`/challenge/evaluate`)
+
+To test a real video model: download the prompt sets and `plan.json` from a prototype run, generate one clip
+per scene with any text-to-video tool from each prompt set, and upload both sets. They're scored without any
+ground truth: optical-flow warping error inside clips and across cuts, colour drift relative to scene 1, and
+ORB feature overlap between consecutive scenes. With an LLM key, a Video-LLM judge also scores sampled frames.
+
+### Colab notebook with a real video model (`notebooks/challenge1_colab.ipynb`, `/challenge/notebook`)
+
+The web app has no GPU, so its generator is a stand-in. The notebook runs the same planner, state graph and
+adapter on a free Colab T4 with a real text-to-video diffusion model: **AnimateDiff** (SD 1.5 + motion module),
+with **IP-Adapter** as the visual-memory adapter (the reference image is the last frame generated in that place, or
+the scene-1 keyframe in a new place). Both arms are then scored with pretrained models: **OWLv2** to detect the
+characters and objects the state graph expects, **DINOv2** for identity drift, **CLIP** for place and text
+match, optical-flow warping error, and optionally a **Gemini** Video-LLM judge.
+
+To run it: open the notebook in Colab (the "Open in Colab" button on `/challenge/notebook`), choose
+*Runtime → T4 GPU*, and *Run all* (about 15-25 min). Optionally add a `GEMINI_API_KEY` Colab secret. Then
+*File → Download .ipynb* and replace `notebooks/challenge1_colab.ipynb` with it. The saved outputs (video,
+storyboards, scores) then show on the `/challenge/notebook` page and on GitHub. The notebook clones this repo, so
+push the `homeworks/challenge_video/` code before running it.
+
+### Optional LLM keys
+
+```bash
+export GEMINI_API_KEY=...       # planner + Video-LLM judge via Gemini (GEMINI_MODEL, default gemini-2.5-flash)
+export ANTHROPIC_API_KEY=...    # or Claude (pip install anthropic; CLAUDE_MODEL, default claude-opus-5)
+```
+
+Without a key everything still runs offline: the rule-based planner is used and the judge is skipped.
 
 
 ## Sample outputs

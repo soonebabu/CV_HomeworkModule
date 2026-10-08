@@ -21,6 +21,7 @@ HOMEWORKS = {
     "hw3": "Homework 3 - Blurring: Space vs. Frequency",
     "hw4": "Homework 4 - Human Boundary Segmentation",
     "hw6": "Homework 6 - Optical Flow, Tracking & Structure from Motion",
+    "challenge": "Challenge 1 - Consistent Long-Form Generative Video",
 }
 _SAFE_ID = re.compile(r"^[A-Za-z0-9_-]+$")
 _PENDING_MAX_AGE_S = 24 * 3600

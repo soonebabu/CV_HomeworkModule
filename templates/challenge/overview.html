@@ -1,0 +1,92 @@
+{% extends "challenge/_layout.html" %}
+{% block content %}
+<div class="card">
+  <span class="badge">Challenge 1</span>
+  <h1 style="margin-top:10px;">Maintaining Narrative and Visual Consistency in Long-Form Generative Video</h1>
+  <p>CSc 8830 Computer Vision. Challenge from Dr. Mohit Bansal's talk. This module is a quick prototype and
+    feasibility test of the solution I proposed: a <strong>Scene-Graph Orchestrator</strong> that separates
+    high-level narrative planning from low-level video generation.</p>
+</div>
+
+<div class="card">
+  <h2>Problem</h2>
+  <p>Current generative video models make impressive short clips but fall apart over a long sequence:</p>
+  <ul>
+    <li><strong>Character drift:</strong> faces, clothing or overall appearance change between scenes.</li>
+    <li><strong>Object &amp; spatial shift:</strong> objects vanish or morph, and room layouts change for no reason.</li>
+    <li><strong>Limited memory:</strong> the model forgets what happened in earlier scenes.</li>
+    <li><strong>High prompt effort:</strong> keeping things consistent takes constant re-prompting.</li>
+  </ul>
+  <p class="note"><strong>Key question:</strong> how can we keep character, object and spatial state persistent
+    across a long generated video?</p>
+</div>
+
+<div class="card">
+  <h2>Proposed solution and how this module implements it</h2>
+  <div class="pipeline">
+    <div class="stage"><b>1. User prompt</b><span>a short story</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><b>2. LLM narrative planner</b><span>story &rarr; JSON scenes, entities, actions, relations</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage key"><b>3. Persistent state graph</b><span>identity, appearance, locations, who holds what</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage key"><b>4a. Control adapter</b><span>enriched prompt, layout boxes, locked seeds, continuity</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><b>4b. Video generator</b><span>one clip per scene</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="stage"><b>Evaluation</b><span>baseline vs. orchestrator, 6 axes</span></div>
+  </div>
+  <table class="result-table" style="margin-top:16px;">
+    <tr><th class="wrap">Stage (from the slides)</th><th class="wrap">What runs here</th><th class="wrap">Code</th></tr>
+    <tr><td class="wrap">2. LLM narrative planner</td>
+      <td class="wrap">{% if llm_name %}<strong>{{ llm_name }}</strong> is configured and turns the story into a structured plan.{% else %}No LLM key is set on this server, so a deterministic rule-based planner produces the same JSON plan. Set <code>GEMINI_API_KEY</code> or <code>ANTHROPIC_API_KEY</code> to use an LLM.{% endif %}
+        The plan can also be edited by hand before generating.</td>
+      <td class="wrap"><code>planner.py</code>, <code>llm.py</code></td></tr>
+    <tr><td class="wrap">3. Persistent world / state graph</td>
+      <td class="wrap">Tracks characters (identity + appearance, filled in once and then locked), objects (attributes,
+        where they are, who holds them) and context (location, weather, time, relations, actions). It advances one
+        scene at a time and logs every change.</td><td class="wrap"><code>state_graph.py</code></td></tr>
+    <tr><td class="wrap">4a. Control adapter</td>
+      <td class="wrap">Turns the state into generator conditioning: an enriched prompt with every visible identity, a
+        negative prompt, a layout of boxes that persists per location, fixed per-entity and per-place seeds, and
+        continuity from the previous scene's last frame.</td><td class="wrap"><code>control_adapter.py</code></td></tr>
+    <tr><td class="wrap">4b. Constraint-guided generator</td>
+      <td class="wrap">An offline stand-in generator (no GPU is available here) that draws exactly what the conditioning
+        says and makes up whatever it leaves open, like a text-to-video model. For real models, the prompts are
+        exported and the resulting clips are scored on page 2.</td><td class="wrap"><code>generator.py</code></td></tr>
+    <tr><td class="wrap">Evaluation &amp; metrics</td>
+      <td class="wrap">The same story runs through a <span class="arm-base">baseline</span> (each scene prompted on its own)
+        and the <span class="arm-orch">orchestrator</span>, then gets scored on character, object, spatial and temporal
+        consistency plus prompt adherence and narrative flow. {% if judge_available %}A Video-LLM judge
+        ({{ llm_name }}) can score the frames as well.{% else %}A Video-LLM judge is available once an LLM key is set.{% endif %}</td>
+      <td class="wrap"><code>metrics.py</code>, <code>judge.py</code>, <code>real_eval.py</code></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>How to use it</h2>
+  <ol>
+    <li><a href="{{ url_for('challenge.prototype_view') }}">Prototype run</a>: pick or write a story and run it.
+      You get the plan, the state graph after every scene, the adapter's conditioning, side-by-side
+      baseline and orchestrator videos, and the scores. Takes about 10 s on CPU.</li>
+    <li><a href="{{ url_for('challenge.evaluate_view') }}">Evaluate real clips</a>: download the exported prompts
+      from a prototype run, generate the clips with any text-to-video model (one clip per scene, once per prompt set),
+      upload them, and get the same comparison measured directly on the real videos.</li>
+    <li><a href="{{ url_for('challenge.method') }}">Method &amp; metrics</a> explains every measurement, and
+      <a href="{{ url_for('samples.gallery', hw='challenge') }}">Sample outputs</a> has saved runs.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h2>Expected result &amp; feasibility</h2>
+  <p><strong>Result:</strong> less character drift and fewer disappearing objects in long-form video, with no loss of
+    per-scene prompt adherence. The prototype measures exactly that difference.</p>
+  <p><strong>Feasibility:</strong> nothing here is trained. The planner and judge are pretrained LLMs used as-is.
+    The state graph and adapter are lightweight code that sits between them and a frozen generator, so any
+    diffusion video model that accepts a prompt, a negative prompt, a seed and (optionally) layout boxes or a
+    first frame can be plugged in without retraining.</p>
+  <p class="muted">Related work: the planner-then-generate design is in the same family as VideoDirectorGPT
+    (LLM-guided multi-scene video planning, from Dr. Bansal's group). Here the plan is held as an explicit world
+    state that persists and updates across scenes.</p>
+</div>
+{% endblock %}

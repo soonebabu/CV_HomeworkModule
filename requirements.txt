@@ -6,3 +6,4 @@ Flask==3.0.3
 gunicorn
 scipy>=1.11
 imageio-ffmpeg>=0.5
+markdown>=3.5

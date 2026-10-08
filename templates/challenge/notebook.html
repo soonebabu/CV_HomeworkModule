@@ -1,0 +1,55 @@
+{% extends "challenge/_layout.html" %}
+{% block content %}
+<style>
+  .nb-cell { margin: 0 0 14px; }
+  .nb-md { line-height: 1.55; }
+  .nb-md table, .nb-out table { border-collapse: collapse; font-size: 12.5px; margin: 8px 0; }
+  .nb-md th, .nb-md td, .nb-out th, .nb-out td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
+  .nb-code summary { font-size: 12px; color: var(--muted); }
+  .nb-code pre, .nb-out pre { background: #161d21; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px;
+    font-size: 12px; overflow-x: auto; white-space: pre; margin: 6px 0; }
+  .nb-out { overflow-x: auto; }
+  .nb-out img { max-width: 100%; background: #fff; border-radius: 6px; margin: 6px 0; }
+  .nb-out video { width: 100%; border-radius: 6px; }
+  .nb-out.error pre { border-color: #86432f; color: #f2b8a3; }
+  .nb-out .dataframe { color: var(--text); }
+</style>
+<div class="card">
+  <h1>Colab notebook: the prototype with a real video model</h1>
+  <p>The web app's generator is an offline stand-in, because there's no GPU here. This notebook runs the same
+    planner &rarr; state graph &rarr; control adapter pipeline on a free Colab GPU with a real text-to-video
+    diffusion model (<strong>AnimateDiff</strong>, with <strong>IP-Adapter</strong> as the visual-memory adapter). It
+    scores both arms with pretrained vision models (OWLv2 detector, DINOv2, CLIP) and optionally a Gemini
+    Video-LLM judge.</p>
+  <p><a href="{{ colab_url }}" target="_blank" rel="noopener"><button type="button">Open in Colab</button></a></p>
+  {% if not executed %}
+  <p class="note">The copy in this repo (<code>{{ nb_path }}</code>) hasn't been run yet, so only the code is shown.
+    Run it in Colab (Runtime &rarr; T4 GPU &rarr; Run all), then <em>File &rarr; Download .ipynb</em> and replace
+    <code>{{ nb_path }}</code> with it. The outputs will then show up on this page.</p>
+  {% else %}
+  <p class="muted">Below are the saved outputs from a Colab GPU run. Code cells are collapsed; click to expand.</p>
+  {% endif %}
+</div>
+
+{% if cells %}
+<div class="card">
+  {% for c in cells %}
+  <div class="nb-cell">
+    {% if c.type == 'markdown' %}
+    <div class="nb-md">{{ c.html }}</div>
+    {% else %}
+    <details class="nb-code" {{ 'open' if not executed }}>
+      <summary>Code [{{ c.n if c.n is not none else ' ' }}]</summary>
+      <pre>{{ c.source }}</pre>
+    </details>
+    {% for o in c.outputs %}
+    <div class="nb-out {{ o.kind }}">{{ o.html }}</div>
+    {% endfor %}
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card"><p>Notebook file not found at <code>{{ nb_path }}</code>.</p></div>
+{% endif %}
+{% endblock %}
