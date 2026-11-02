@@ -1,0 +1,14 @@
+{% extends "challenge/_layout.html" %}
+{% import "challenge/_macros.html" as show %}
+{% block content %}
+<div class="card">
+  <h1>Data Files</h1>
+  {% for name, text in files %}
+  <details>
+    <summary>{{ name }}</summary>
+    <p><a href="{{ show.file(name) }}">Open file</a></p>
+    <pre>{{ text }}</pre>
+  </details>
+  {% endfor %}
+</div>
+{% endblock %}

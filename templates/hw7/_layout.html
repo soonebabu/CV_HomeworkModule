@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block sidebar_brand %}Homework 7 &middot; Stereo{% endblock %}
+{% block sidebar_links %}
+  <a class="nav-link {{ 'current' if active_page == 'overview' }}" href="{{ url_for('hw7.overview') }}">Overview</a>
+  <a class="nav-link {{ 'current' if active_page == 'intrinsics' }}" href="{{ url_for('hw7.intrinsics_view') }}">1. Camera intrinsics</a>
+  <a class="nav-link {{ 'current' if active_page == 'stereo' }}" href="{{ url_for('hw7.stereo_view') }}">2. Object size</a>
+  <a class="nav-link {{ 'current' if active_page == 'room' }}" href="{{ url_for('hw7.room_view') }}">3. Room dimensions</a>
+  <a class="nav-link samples-link {{ 'current' if active_page == 'samples' }}" href="{{ url_for('samples.gallery', hw='hw7') }}">Sample outputs</a>
+{% endblock %}

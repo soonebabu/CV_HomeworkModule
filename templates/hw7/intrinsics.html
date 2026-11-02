@@ -1,0 +1,24 @@
+{% extends "hw7/_layout.html" %}
+{% block content %}
+<div class="card">
+  <h1>Camera Intrinsics</h1>
+  <form method="POST">
+    <button type="submit">Compute from calibration_images</button>
+  </form>
+</div>
+
+{% if calib %}
+<div class="card">
+  <h2>Result</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Photos used</div><div class="value">{{ calib.n_used }} / {{ calib.n_photos }}</div></div>
+    <div class="stat-box"><div class="label">fx (px)</div><div class="value">{{ "%.2f"|format(calib.camera_matrix[0][0]) }}</div></div>
+    <div class="stat-box"><div class="label">fy (px)</div><div class="value">{{ "%.2f"|format(calib.camera_matrix[1][1]) }}</div></div>
+    <div class="stat-box"><div class="label">cx (px)</div><div class="value">{{ "%.2f"|format(calib.camera_matrix[0][2]) }}</div></div>
+    <div class="stat-box"><div class="label">cy (px)</div><div class="value">{{ "%.2f"|format(calib.camera_matrix[1][2]) }}</div></div>
+    <div class="stat-box"><div class="label">Reprojection error</div><div class="value">{{ "%.3f"|format(calib.reprojection_error) }} px</div></div>
+  </div>
+</div>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}

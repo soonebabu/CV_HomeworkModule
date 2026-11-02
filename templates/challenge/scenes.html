@@ -1,0 +1,25 @@
+{% extends "challenge/_layout.html" %}
+{% import "challenge/_macros.html" as show %}
+{% block content %}
+<div class="card">
+  <h1>Scene Clips</h1>
+  <p>Each scene from the Colab run, baseline next to orchestrator.</p>
+</div>
+{% for scene in scenes %}
+<div class="card">
+  <h2>Scene {{ scene.index }}</h2>
+  <p>{{ scene.text }}</p>
+  <div class="video-pair">
+    <div><p>Baseline</p>{{ show.video("baseline/scene%d.mp4"|format(scene.index)) }}</div>
+    <div><p>Orchestrator</p>{{ show.video("orchestrated/scene%d.mp4"|format(scene.index)) }}</div>
+  </div>
+  <details>
+    <summary>Prompts</summary>
+    <p><strong>Baseline:</strong> {{ scene.baseline.prompt }}</p>
+    <p><strong>Baseline negative:</strong> {{ scene.baseline.negative }}</p>
+    <p><strong>Orchestrator:</strong> {{ scene.orchestrated.prompt }}</p>
+    <p><strong>Orchestrator negative:</strong> {{ scene.orchestrated.negative }}</p>
+  </details>
+</div>
+{% endfor %}
+{% endblock %}

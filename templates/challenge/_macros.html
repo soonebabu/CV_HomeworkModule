@@ -1,0 +1,16 @@
+{% macro file(name) %}{{ url_for('challenge.result_file', name=name) }}{% endmacro %}
+
+{% macro video(name) %}<video controls loop muted playsinline preload="metadata" src="{{ file(name) }}"></video>{% endmacro %}
+
+{% macro figure(name, caption) %}
+<figure class="wide-figure"><img src="{{ file(name) }}" alt="{{ caption }}"><figcaption>{{ caption }}</figcaption></figure>
+{% endmacro %}
+
+{% macro compare(rows, digits=2) %}
+<table class="result-table">
+  <tr><th>Metric</th><th>Baseline</th><th>Orchestrator</th></tr>
+  {% for label, baseline, orchestrated in rows %}
+    <tr><td>{{ label }}</td><td>{{ baseline|round(digits) }}</td><td>{{ orchestrated|round(digits) }}</td></tr>
+  {% endfor %}
+</table>
+{% endmacro %}

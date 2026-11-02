@@ -23,5 +23,11 @@ static/hw6/uploads/*
 !static/hw6/uploads/.gitkeep
 static/hw6/outputs/*
 !static/hw6/outputs/.gitkeep
+static/hw7/uploads/*
+!static/hw7/uploads/.gitkeep
+static/hw7/outputs/*
+!static/hw7/outputs/.gitkeep
+static/hw7/calib/*
+!static/hw7/calib/.gitkeep
 static/samples/.pending/
 .DS_Store

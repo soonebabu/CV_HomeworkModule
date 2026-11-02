@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block sidebar_brand %}Challenge 1 &middot; Video{% endblock %}
+{% block sidebar_links %}
+  <a class="nav-link {{ 'current' if active_page == 'overview' }}" href="{{ url_for('challenge.overview') }}">Results</a>
+  <a class="nav-link {{ 'current' if active_page == 'scenes' }}" href="{{ url_for('challenge.scenes') }}">Scene clips</a>
+  <a class="nav-link {{ 'current' if active_page == 'offline' }}" href="{{ url_for('challenge.offline') }}">Offline run</a>
+  <a class="nav-link {{ 'current' if active_page == 'data' }}" href="{{ url_for('challenge.data') }}">Data files</a>
+{% endblock %}
+{% block head %}
+<style>
+  .video-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  video { width: 100%; display: block; border: 1px solid var(--border); border-radius: 8px; background: #000; }
+  .video-pair p { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+  pre { overflow: auto; max-height: 420px; font-size: 12px; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; }
+  @media (max-width: 800px) { .video-pair { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}

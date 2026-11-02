@@ -1,0 +1,44 @@
+{% extends "challenge/_layout.html" %}
+{% import "challenge/_macros.html" as show %}
+{% block content %}
+<div class="card">
+  <h1>Offline Run</h1>
+  <p>This run uses the built-in renderer, not a real video model, so it tests the pipeline. These scores are not
+    comparable with the Colab results.</p>
+  {{ show.video("offline_compare.mp4") }}
+  <div class="video-pair">
+    <div><p>Baseline</p>{{ show.video("offline_baseline.mp4") }}</div>
+    <div><p>Orchestrator</p>{{ show.video("offline_orchestrated.mp4") }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Scores</h2>
+  {{ show.compare(score_rows) }}
+  {{ show.figure("offline_chart.png", "Baseline vs. orchestrator") }}
+</div>
+
+<div class="card">
+  <h2>Measurements</h2>
+  {{ show.compare(details) }}
+  <p class="muted">Story: {{ effort.story_words }} words. Average prompt: {{ effort.baseline_words }} words for the
+    baseline, {{ effort.orchestrated_words }} for the orchestrator.</p>
+</div>
+
+<div class="card">
+  <h2>Storyboard, layout and state graph</h2>
+  {{ show.figure("offline_storyboard.png", "Storyboard") }}
+  {{ show.figure("offline_layout.png", "Scene layout") }}
+  {{ show.figure("offline_graph.png", "State graph") }}
+</div>
+
+<div class="card">
+  <h2>Prompts</h2>
+  <table class="result-table">
+    <tr><th>Scene</th><th>Baseline</th><th>Orchestrator</th></tr>
+    {% for baseline, orchestrated in prompts %}
+      <tr><td>{{ loop.index }}</td><td>{{ baseline.prompt }}</td><td>{{ orchestrated.prompt }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

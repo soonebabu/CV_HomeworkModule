@@ -1,0 +1,151 @@
+{% extends "hw7/_layout.html" %}
+{% block head %}
+<style>
+  .pair-canvases { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .pair-canvases canvas { width: 100%; border: 1px solid var(--border); cursor: crosshair; display: block; }
+  .pair-canvases .muted { margin: 0 0 4px; }
+  .button-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  @media (max-width: 800px) { .pair-canvases { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Object Size</h1>
+  {% if not run %}
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="action" value="upload">
+    <label>Left photo</label>
+    <input type="file" name="left" accept="image/*" required>
+    <label>Right photo</label>
+    <input type="file" name="right" accept="image/*" required>
+    <label>Baseline (mm)</label>
+    <input type="number" step="0.1" min="1" name="baseline_mm" value="297" required>
+    <button type="submit">Measure</button>
+  </form>
+  {% else %}
+  <label>Shape</label>
+  <select id="kind">
+    <option value="rectangle" {{ 'selected' if form_kind == 'rectangle' }}>Rectangle</option>
+    <option value="circle" {{ 'selected' if form_kind == 'circle' }}>Circle</option>
+    <option value="polygon" {{ 'selected' if form_kind == 'polygon' }}>Other shape</option>
+  </select>
+
+  <div class="pair-canvases">
+    <div><p class="muted">Left</p><canvas id="leftCanvas"></canvas></div>
+    <div><p class="muted">Right (optional)</p><canvas id="rightCanvas"></canvas></div>
+  </div>
+
+  <form method="POST">
+    <input type="hidden" name="action" value="measure">
+    <input type="hidden" name="run_id" value="{{ run_id }}">
+    <input type="hidden" name="kind" id="kindField">
+    <input type="hidden" name="points" id="pointsField">
+    <input type="hidden" name="right_points" id="rightPointsField">
+    <div class="button-row">
+      <button type="submit" id="measureBtn" disabled>Measure</button>
+      <button type="button" class="secondary" id="undoBtn">Undo</button>
+      <button type="button" class="secondary" id="clearBtn">Clear</button>
+      <a href="{{ url_for('hw7.stereo_view') }}"><button type="button" class="secondary">New pair</button></a>
+    </div>
+  </form>
+
+  <script>
+    const MAX_POINTS = { rectangle: 4, circle: 40, polygon: 40 };
+    const left = { canvas: document.getElementById('leftCanvas'), img: new Image(), points: {{ (form_points or [])|tojson }}, colour: '#ff3b30' };
+    const right = { canvas: document.getElementById('rightCanvas'), img: new Image(), points: [], colour: '#ffcc00' };
+    const kind = document.getElementById('kind');
+
+    function draw(view) {
+      const ctx = view.canvas.getContext('2d');
+      ctx.drawImage(view.img, 0, 0);
+      const r = Math.max(3, view.canvas.width / 220);
+      ctx.lineWidth = r / 2;
+      ctx.strokeStyle = 'lime';
+      if (view.points.length > 1 && kind.value !== 'circle') {
+        ctx.beginPath();
+        view.points.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+        ctx.closePath();
+        ctx.stroke();
+      }
+      ctx.font = `${r * 4}px sans-serif`;
+      view.points.forEach((p, i) => {
+        ctx.fillStyle = view.colour;
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], r, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillText(i + 1, p[0] + r * 1.5, p[1] - r * 1.5);
+      });
+    }
+
+    function refresh() {
+      draw(left);
+      draw(right);
+      const rightOk = right.points.length === 0 || right.points.length === left.points.length;
+      const countOk = kind.value === 'rectangle' ? left.points.length === 4 : left.points.length >= 3;
+      document.getElementById('measureBtn').disabled = !(countOk && rightOk);
+      document.getElementById('kindField').value = kind.value;
+      document.getElementById('pointsField').value = JSON.stringify(left.points);
+      document.getElementById('rightPointsField').value = right.points.length ? JSON.stringify(right.points) : '';
+    }
+
+    function attach(view, src) {
+      view.img.onload = () => {
+        // the canvas buffer holds the full rectified image, so clicks are in rectified pixels
+        view.canvas.width = view.img.width;
+        view.canvas.height = view.img.height;
+        refresh();
+      };
+      view.img.src = src;
+      view.canvas.addEventListener('click', (e) => {
+        if (view.points.length >= MAX_POINTS[kind.value]) return;
+        const rect = view.canvas.getBoundingClientRect();
+        view.points.push([(e.clientX - rect.left) * (view.canvas.width / rect.width),
+                          (e.clientY - rect.top) * (view.canvas.height / rect.height)]);
+        refresh();
+      });
+    }
+
+    attach(left, "{{ urls.left }}");
+    attach(right, "{{ urls.right }}");
+    kind.addEventListener('change', () => { left.points = []; right.points = []; refresh(); });
+    document.getElementById('undoBtn').addEventListener('click', () => {
+      (right.points.length ? right : left).points.pop();
+      refresh();
+    });
+    document.getElementById('clearBtn').addEventListener('click', () => { left.points = []; right.points = []; refresh(); });
+  </script>
+  {% endif %}
+</div>
+
+{% if result %}
+<div class="card">
+  <h2>Result</h2>
+  {% if result.headline %}
+  <div class="stat-grid">
+    {% for label, value in result.headline %}
+      <div class="stat-box"><div class="label">{{ label }}</div><div class="value">{{ "%.1f"|format(value) }} mm</div></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <figure class="wide-figure"><img src="{{ result.image_url }}" alt="Measured outline"></figure>
+
+  {% if result.edges %}
+  <table class="result-table">
+    <tr><th>Edge</th><th>Length (mm)</th></tr>
+    {% for e in result.edges %}
+      <tr><td>{{ loop.index }} &rarr; {{ loop.index % result.edges|length + 1 }}</td><td>{{ "%.1f"|format(e) }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+
+  <table class="result-table">
+    <tr><th>Point</th><th>d (px)</th><th>X (mm)</th><th>Y (mm)</th><th>Z (mm)</th></tr>
+    {% for r in result.rows %}
+      <tr><td>{{ r.n }}</td><td>{{ "%.2f"|format(r.d) }}</td><td>{{ "%.1f"|format(r.X) }}</td><td>{{ "%.1f"|format(r.Y) }}</td><td>{{ "%.1f"|format(r.Z) }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}

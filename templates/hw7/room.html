@@ -1,0 +1,33 @@
+{% extends "hw7/_layout.html" %}
+{% block content %}
+<div class="card">
+  <h1>Room Dimensions</h1>
+  <form method="POST" enctype="multipart/form-data">
+    <label>Video</label>
+    <input type="file" name="video" accept="video/*" required>
+    <label>Baseline: length of the opening slide (mm)</label>
+    <input type="number" step="1" min="1" name="slide_mm" value="1262" required>
+    <label>Distance from the camera to the wall (mm)</label>
+    <input type="number" step="1" min="1" name="wall_mm" value="2673" required>
+    <label>Slide ends at (s)</label>
+    <input type="number" step="0.1" min="0.1" name="slide_end_s" value="25" required>
+    <label>Frames to use</label>
+    <input type="number" name="frames" min="10" max="300" value="150">
+    <button type="submit">Measure the room</button>
+  </form>
+</div>
+
+{% if result %}
+<div class="card">
+  <h2>Result</h2>
+  <div class="stat-grid">
+    {% for label, value in result.stats %}
+      <div class="stat-box"><div class="label">{{ label }}</div><div class="value">{{ value }}</div></div>
+    {% endfor %}
+  </div>
+  {% if result.note %}<p class="muted">{{ result.note }}</p>{% endif %}
+  <figure class="wide-figure"><img src="{{ result.plan_url }}" alt="Measured room"></figure>
+</div>
+{% include "samples/_save_button.html" %}
+{% endif %}
+{% endblock %}

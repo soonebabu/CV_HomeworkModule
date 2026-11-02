@@ -1,0 +1,47 @@
+{
+  "hw": "hw7",
+  "page": "room",
+  "title": "Wall dimensions from one video",
+  "images": [
+    {
+      "file": "00.jpg",
+      "caption": "First frame, last frame, and the ceiling and floor lines",
+      "wide": false,
+      "video": false
+    }
+  ],
+  "metrics": [
+    {
+      "label": "Wall width",
+      "value": "3.89 m"
+    },
+    {
+      "label": "Height",
+      "value": "3.04 m"
+    },
+    {
+      "label": "Distance to wall",
+      "value": "2.67 m"
+    }
+  ],
+  "params": [
+    {
+      "label": "Slide",
+      "value": "1260 mm in 25 s"
+    },
+    {
+      "label": "Distance to wall",
+      "value": "2673 mm"
+    },
+    {
+      "label": "Frames",
+      "value": "149"
+    }
+  ],
+  "table_html": null,
+  "table_title": null,
+  "math": false,
+  "note": null,
+  "caption": "",
+  "saved_at": "2026-11-01 20:09"
+}

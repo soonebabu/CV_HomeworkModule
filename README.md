@@ -20,6 +20,7 @@ homeworks/
     
   hw4_segmentation/               # Homework 4 - classical human boundary segmentation vs. SAM2
   hw6_motion/                     # Homework 6 - optical flow, Lucas-Kanade tracking, structure from motion
+  hw7_stereo/                     # Homework 7 - object size with calibrated stereo, room dimensions from video
   challenge_video/                # Challenge 1 - Scene-Graph Orchestrator for consistent long-form video
     notebooks/                    #   Colab notebook (real video model), saved with its outputs
     challenge1_results/           #   outputs of that Colab run (videos, images, scores)
@@ -36,6 +37,7 @@ actualvssystemvalue.csv          # HW2 ground truth vs. what the app measured
 - **Code:** `homeworks/challenge_video/`
 - **Notebook:** `homeworks/challenge_video/notebooks/challenge1_colab.ipynb`. It was run on Colab and saved with
   its outputs, so open it on GitHub to see the results.
+- **Results page:** `/challenge`, from the Challenge Video Results tile on the landing page.
 - **Outputs:** `homeworks/challenge_video/challenge1_results/`, with the side-by-side video (`side_by_side.mp4`),
   each scene's clip (`baseline/`, `orchestrated/`), storyboards, the score chart (`scores.png`) and all numbers
   (`results.json`).
@@ -308,3 +310,46 @@ The default camera settings come from the HW2 calibration photos in `calibration
 SM-G998U, 10 x 7 inner corners): fx = 2767, fy = 2775, cx = 1478, cy = 2051 at 3000 x 4000. If you've run a
 calibration on the HW2 page, that one is used instead.
 
+
+## Homework 7 - Stereo Measurement and Room Dimensions
+
+Same idea as HW2, but the distance no longer has to be typed in. Two views of the scene give the distance to
+every point, so the size comes from real 3D positions.
+
+**Files:** `stereo.py`, `room.py`, `routes.py`
+
+### Step 1 - Camera intrinsics (`/hw7/intrinsics`)
+
+Click the button. It finds fx, fy, cx, cy and the lens distortion from the chessboard photos in
+`calibration_images/`. This reads every full-size photo, so give it a few minutes. You only need to do it once.
+
+### Step 2 - Object size (`/hw7/stereo`)
+
+1. Take a photo of the object, slide the phone sideways by a measured distance, and take a second photo. Use the
+   same phone and zoom as the chessboard photos.
+2. Upload both and enter that distance as the baseline in mm, then press Measure.
+
+The pair is rectified and the main object is found in both images. Its distance comes from Z = f B / d, and you
+get width and height for a rectangle, the diameter for a circle, or every edge for any other shape, along with
+X, Y and Z for each point. To measure something else in the photo, or if it picks the wrong object, choose the
+shape and click the points on the left image (and on the right image if the object is plain).
+
+### Step 3 - Room dimensions (`/hw7/room`)
+
+1. Film one video with one phone. Start with a straight sideways slide of a measured length, about 60 cm along a
+   table edge, facing the room. Then walk slowly sideways around the room facing the walls, tilting up to the
+   ceiling and down to the floor, and finish where you started.
+2. Upload it, and enter the slide length as the baseline in mm, the distance from the camera to the wall, and the
+   time the slide ends in seconds.
+
+One moving camera can't tell how big a room is on its own, so the slide sets the real scale. The app tracks the
+phone through the video, uses pairs of frames as stereo pairs to build a 3D point cloud, and fits a box to it. You
+get length, width, height and a floor plan.
+
+This is rough. On a rendered 5.2 x 3.8 x 2.6 m room it gave about 4.1 x 3.9 x 2.0 m, so treat it as an estimate.
+If tracking is lost, change "Frames to use": 150 worked best there, while 100 and 300 failed.
+
+Plain walls don't give tracking enough to follow, and a clip may show only one wall. In that case you get that
+wall instead: its width from the room corners, and the height if the ceiling and floor lines are in view, scaled
+by the distance to the wall you entered (one pixel on the wall is Z / f mm). The picture shows the lines it used.
+This is a rough estimate too, and it works best filmed square on to the wall.

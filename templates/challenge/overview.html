@@ -1,0 +1,69 @@
+{% extends "challenge/_layout.html" %}
+{% import "challenge/_macros.html" as show %}
+{% block content %}
+<div class="card">
+  <h1>Scene-Graph Orchestrator</h1>
+  <p>Results from the Colab run with a real video model (AnimateDiff). The same six-scene story was generated twice:
+    the baseline prompts each scene on its own, and the orchestrator conditions each scene on a persistent state graph.</p>
+  {{ show.video("side_by_side.mp4") }}
+</div>
+
+<div class="card">
+  <h2>Story</h2>
+  <ol>{% for scene in plan.scenes %}<li>{{ scene.text }}</li>{% endfor %}</ol>
+</div>
+
+<div class="card">
+  <h2>Scores</h2>
+  <p class="muted">0 is worst, 1 is best.</p>
+  {{ show.compare(score_rows) }}
+  {{ show.figure("scores.png", "Baseline vs. orchestrator") }}
+</div>
+
+<div class="card">
+  <h2>Model-free metrics</h2>
+  <p class="muted">Warp errors: lower is better. The others run from 0 to 1, higher is better.</p>
+  {{ show.compare(model_free) }}
+</div>
+
+<div class="card">
+  <h2>Detections</h2>
+  {{ show.figure("detections.png", "Characters and objects found in each scene") }}
+  <table class="result-table">
+    <tr><th>Run</th><th>Objects that vanished</th></tr>
+    <tr><td>Baseline</td><td>{{ scores.baseline.vanished|join(", ") or "none" }}</td></tr>
+    <tr><td>Orchestrator</td><td>{{ scores.orchestrated.vanished|join(", ") or "none" }}</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Character identity</h2>
+  <p class="muted">DINOv2 cosine similarity between each scene and the character's first appearance.</p>
+  <div class="video-pair">
+    {% for name, run in [("Baseline", scores.baseline), ("Orchestrator", scores.orchestrated)] %}
+    <div>
+      <p>{{ name }}</p>
+      <table class="result-table">
+        <tr><th>Character</th><th>Scene</th><th>Similarity</th></tr>
+        {% for row in run.identity %}
+          <tr><td>{{ row.character }}</td><td>{{ row.scene }}</td><td>{{ row.dino_cos|round(2) }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Storyboard and state graph</h2>
+  {{ show.figure("storyboard.png", "Storyboard") }}
+  {{ show.figure("state_graph.png", "State graph") }}
+</div>
+
+{% if not judge.arms %}
+<div class="card">
+  <h2>LLM judge</h2>
+  <p>Not run: no LLM key was configured for this run.</p>
+</div>
+{% endif %}
+{% endblock %}
